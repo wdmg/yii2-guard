@@ -1,0 +1,75 @@
+{
+  "name": "wdmg/yii2-guard",
+  "description": "Security System",
+  "keywords": ["yii2", "yii2-guard", "guard", "security", "wdmg"],
+  "type": "yii2-extension",
+  "license": "MIT",
+  "version": "1.0.0",
+  "homepage": "https://github.com/wdmg/yii2-guard",
+  "support": {
+    "source": "https://github.com/wdmg/yii2-guard",
+    "issues": "https://github.com/wdmg/yii2-guard/issues"
+  },
+  "authors": [
+    {
+      "name": "Alexsander Vyshnyvetskyy",
+      "email": "alex.vyshnyvetskyy@gmail.com"
+    },
+    {
+      "name": "W.D.M.Group, Ukraine",
+      "email": "wdmg.com.ua@gmail.com"
+    }
+  ],
+  "require": {
+    "yiisoft/yii2": "^2.0.20",
+    "wdmg/yii2-base": "^1.1.2"
+  },
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "wdmg\\guard\\": ""
+    }
+  },
+  "extra": {
+    "options": {
+      "routePrefix": "admin",
+      "useFilters": true,
+      "filters": {
+        "xss": true,
+        "lfi": true,
+        "php": true,
+        "sql": true
+      },
+      "patterns": {
+        "xss": "/(<.*?(script|body|object|iframe|applet|meta|style|form|frameset|frame|svg).*?>)|(base64|data\\:|fromCharCode|expression|onmouse|onload|alert|getcookie|document\\.)/uim",
+        "lfi": "/((\\.|%2e){2,}(\\/|%5c|\\\\)|php:\\/\\/|file:\\/\\/|expect:\\/\\/|zip:\\/\\/|yii\\.php|init\\.php|web\\.php|params\\.php|db\\.php|console\\.php|test\\.php|test_db\\.php|phpinfo|passwd|htaccess)/uism",
+        "php": "/(php:\\/\\/|(eval|preg_replace|require|include|call_user|create_func|array_filter|array_reduce|array_walk|array_map|reflection)\\()/uism",
+        "sql": "/(UNION|SELECT|OUTFILE|ALTER|INSERT|DROP|TRUNCATE|({%tables}))\\s/uism"
+      },
+      "useRateLimit": true,
+      "rateLimit": 60,
+      "rateLimitIgnoringIP": [
+        "::1",
+        "127.0.0.1"
+      ],
+      "rateLimitIgnoringRoutes": [
+        "/admin"
+      ],
+      "rateLimitExceptionRoutes": [
+        "/admin/login",
+        "/admin/restore"
+      ],
+      "rateLimitIgnoringRequests": {
+        "post": false,
+        "get": false,
+        "ajax": true
+      },
+      "rateLimitErrorMessage": "Your request limit has been exceeded! Try later.",
+      "useOverdriveLimit": true,
+      "overdriveLimit": {
+        "post": 200,
+        "get": 100
+      }
+    }
+  }
+}
