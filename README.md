@@ -82,4 +82,5 @@ Use the `Module::dashboardNavItems()` method of the module to generate a navigat
     ?>
 
 # Status and version [in progress development]
+* v.1.0.1 - Fixed deprecated class declaration
 * v.1.0.0 - Added base module and model, behaviors and filters

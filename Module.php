@@ -6,7 +6,7 @@ namespace wdmg\guard;
  * Yii2 Guard
  *
  * @category        Module
- * @version         1.0.0
+ * @version         1.0.1
  * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
  * @link            https://github.com/wdmg/yii2-guard
  * @copyright       Copyright (c) 2019 W.D.M.Group, Ukraine
@@ -49,7 +49,7 @@ class Module extends BaseModule
     /**
      * @var string the module version
      */
-    private $version = "1.0.0";
+    private $version = "1.0.1";
 
     /**
      * @var integer, priority of initialization
@@ -229,14 +229,14 @@ class Module extends BaseModule
 
             // Request query behavior
             $app->attachBehavior('requestBehavior', [
-                'class' => RequestBehavior::className(),
+                'class' => RequestBehavior::class,
                 'security' => new Security(),
                 'module' => $this
             ]);
 
             if ($this->useRateLimit && intval($this->rateLimit) > 0) {
                 $app->attachBehavior('rateLimit', [
-                    'class' => rateLimit::className(),
+                    'class' => rateLimit::class,
                     'rateLimit' => intval($this->rateLimit),
                     'security' => new Security(),
                     'module' => $this
