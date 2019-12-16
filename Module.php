@@ -65,7 +65,7 @@ class Module extends BaseModule
      * @var array, flag for use request filters
      */
     public $filters = [
-        'xss' => true, // flag for scan for XSS attack`s
+        'xss' => false, // flag for scan for XSS attack`s
         'lfi' => true, // flag for scan for LFI/RFI/RCE attack`s
         'php' => true, // flag for scan for PHP-injection attack`s
         'sql' => true // flag for scan for SQL-injection attack`s
