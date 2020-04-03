@@ -57,6 +57,11 @@ class Module extends BaseModule
     private $priority = 1;
 
     /**
+     * @var bool, check password recency
+     */
+    public $passwordRecency = true;
+
+    /**
      * @var bool, flag for use filters
      */
     public $useFilters = true;
@@ -155,6 +160,9 @@ class Module extends BaseModule
         $this->setPriority($this->priority);
 
         // Configure module from app params
+        if (isset(Yii::$app->params['guard.passwordRecency']))
+            $this->passwordRecency = Yii::$app->params['guard.passwordRecency'];
+
         if (isset(Yii::$app->params['guard.useFilters']))
             $this->useFilters = Yii::$app->params['guard.useFilters'];
 
@@ -241,6 +249,28 @@ class Module extends BaseModule
                     'security' => new Security(),
                     'module' => $this
                 ]);
+            }
+
+
+            if (!(Yii::$app->user->isGuest) && ($this->isBackend() && $this->passwordRecency)) {
+                \yii\base\Event::on(\yii\base\Controller::class, \yii\base\Controller::EVENT_BEFORE_ACTION, function ($event) {
+                    if ($auth = Yii::$app->authManager) {
+                        $user = Yii::$app->user->identity;
+                        if ($roles = $auth->getRolesByUser($user->getId())) {
+                            if (in_array('admin', array_keys($roles))) {
+                                if (strtotime($user->updated_at) <= strtotime("- 14 day")) {
+                                    Yii::$app->getSession()->setFlash(
+                                        'danger',
+                                        Yii::t(
+                                            'app/modules/guard',
+                                            'It seems that you have not changed your access password for a long time. We recommend that you, periodically, change the password for access to the administrative interface of the site.'
+                                        )
+                                    );
+                                }
+                            }
+                        }
+                    }
+                });
             }
 
         }
