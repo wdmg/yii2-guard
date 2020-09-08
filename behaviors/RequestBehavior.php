@@ -29,6 +29,8 @@ class RequestBehavior extends Behavior
     public function onBeforeRequest($event)
     {
 
+        $this->security->getBlock();
+
         $post = Yii::$app->getRequest()->post();
         $get = Yii::$app->getRequest()->get();
 

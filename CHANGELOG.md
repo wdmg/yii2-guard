@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## 1.*
+ * Added blocking by IP functionality
+
 ## 1.0.2 (2020-03-25)
  * Up to date dependencies
  

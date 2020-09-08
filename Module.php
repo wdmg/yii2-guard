@@ -147,6 +147,26 @@ class Module extends BaseModule
     ];
 
     /**
+     * @var int, maximum number of attack attempts before blocking
+     */
+    public $maxAttempts = 5;
+
+    /**
+     * @var int, time in seconds of storage the history of attempted attacks in the cache
+     */
+    public $attemptsDuration = 3600;
+
+    /**
+     * @var int, time in seconds of removal restrictions (time of blocking)
+     */
+    public $releaseTime = 3600;
+
+    /**
+     * @var bool, use blocking also by a range of network IP addresses
+     */
+    public $useIpRange = true;
+
+    /**
      * {@inheritdoc}
      */
     public function init()
@@ -235,13 +255,14 @@ class Module extends BaseModule
                 }
             }
 
-            // Request query behavior
+            // Attach request query behavior
             $app->attachBehavior('requestBehavior', [
                 'class' => RequestBehavior::class,
                 'security' => new Security(),
                 'module' => $this
             ]);
 
+            // Attach rate-limit behavior
             if ($this->useRateLimit && intval($this->rateLimit) > 0) {
                 $app->attachBehavior('rateLimit', [
                     'class' => rateLimit::class,
@@ -251,13 +272,13 @@ class Module extends BaseModule
                 ]);
             }
 
-
+            // Check admin, manager or editor users password relevance at last 14 days
             if (!(Yii::$app->user->isGuest) && ($this->isBackend() && $this->passwordRecency)) {
                 \yii\base\Event::on(\yii\base\Controller::class, \yii\base\Controller::EVENT_BEFORE_ACTION, function ($event) {
                     if ($auth = Yii::$app->authManager) {
                         $user = Yii::$app->user->identity;
                         if ($roles = $auth->getRolesByUser($user->getId())) {
-                            if (in_array('admin', array_keys($roles))) {
+                            if (!empty(array_intersect(['admin', 'manager', 'editor'], array_keys($roles)))) {
                                 if (strtotime($user->updated_at) <= strtotime("- 14 day")) {
                                     Yii::$app->getSession()->setFlash(
                                         'danger',
@@ -272,7 +293,6 @@ class Module extends BaseModule
                     }
                 });
             }
-
         }
     }
 }

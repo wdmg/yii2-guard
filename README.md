@@ -61,7 +61,11 @@ To add a module to the project, add the following data in your configuration fil
             'overdriveLimit': { // limit for $_POST and $_GET data overdrive
                 'post': 200,
                 'get': 100
-            }
+            },
+            'maxAttempts': 5, // maximum number of attack attempts before blocking
+            'attemptsDuration': 3600, // time in seconds of storage the history of attempted attacks in the cache
+            'releaseTime': 3600, // time in seconds of removal restrictions (time of blocking)
+            'useIpRange': true // use blocking also by a range of network IP addresses
         ],
         ...
     ],
