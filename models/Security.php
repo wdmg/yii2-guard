@@ -219,12 +219,9 @@ class Security extends \yii\db\ActiveRecord
      */
     public function setBlock($reason = null, $message = '')
     {
-        // Get request instance
-        $request = Yii::$app->request;
-
-        // Collect data
-        //$ip = $this->getRemoteIp($request);
-        $ip = '176.109.228.65';
+        // Get request
+        $request = Yii::$app->getRequest();
+        $ip = $this->getRemoteIp($request);
         $user_agent = $request->userAgent;
 
         if ($reason && $this->getNeedBann($ip))
@@ -259,12 +256,9 @@ class Security extends \yii\db\ActiveRecord
      */
     public function getBlock()
     {
-        // Get request instance
-        $request = Yii::$app->request;
-
-        // Collect data
-        //$ip = $this->getRemoteIp($request);
-        $ip = '176.109.228.65';
+        // Get request
+        $request = Yii::$app->getRequest();
+        $ip = $this->getRemoteIp($request);
         if ($this->getHasBanned($ip)) {
             $this->setBlock(null);
         }
