@@ -308,18 +308,15 @@ class Security extends \yii\db\ActiveRecord
      */
     public function getStatusesList($allStatuses = false)
     {
+        $list = [];
         if ($allStatuses)
-            $list[] = [
-                '*' => Yii::t('app/modules/guard', 'All statuses')
-            ];
+            $list['*'] =  Yii::t('app/modules/guard', 'All statuses');
 
-        $list[] = [
+        return array_merge($list, [
             self::GUARD_STATUS_IS_BANNED => Yii::t('app/modules/guard', 'Banned'),
             self::GUARD_STATUS_IS_UNBANNED => Yii::t('app/modules/guard', 'Unbanned'),
             self::GUARD_STATUS_IS_RELEASED => Yii::t('app/modules/guard', 'Released')
-        ];
-
-        return $list;
+        ]);
     }
 
     /**
@@ -330,12 +327,11 @@ class Security extends \yii\db\ActiveRecord
      */
     public function getReasonsList($allReasons = false)
     {
+        $list = [];
         if ($allReasons)
-            $list[] = [
-                '*' => Yii::t('app/modules/guard', 'All reasons')
-            ];
+            $list['*'] =  Yii::t('app/modules/guard', 'All reasons');
 
-        $list[] = [
+        return array_merge($list, [
             'manual' => Yii::t('app/modules/guard', 'Manual blocking'),
             'ratelimit' => Yii::t('app/modules/guard', 'Rate limit'),
             'overdrive' => Yii::t('app/modules/guard', 'Overdrive attack'),
@@ -343,9 +339,7 @@ class Security extends \yii\db\ActiveRecord
             'lfi' => Yii::t('app/modules/guard', 'LFI/RFI/RCE attack'),
             'php' => Yii::t('app/modules/guard', 'PHP-injection'),
             'sql' => Yii::t('app/modules/guard', 'SQL-injection')
-        ];
-
-        return $list;
+        ]);
     }
 
     /**

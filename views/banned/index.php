@@ -68,7 +68,11 @@ $this->params['breadcrumbs'][] = $this->title;
                     'class' => 'text-center'
                 ],
                 'value' => function($data) {
-                    return $data->reason;
+                    $reasons = $data->getReasonsList(false);
+                    if (isset($reasons[$data->reason]))
+                        return $reasons[$data->reason];
+                    else
+                        return $data->reason;
                 }
             ],
 
