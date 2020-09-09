@@ -4,6 +4,8 @@ return [
 
     'It seems that you have not changed your access password for a long time. We recommend that you, periodically, change the password for access to the administrative interface of the site.' => "Похоже, что Вы давно не меняли пароль доступа. Рекомендуем переодически менять пароль доступа к административному интерфейсу сайта.",
 
+    'Security' => "Безопасность",
+    'Banned List' => "Список блокировок",
 
     'ID' => "ИД",
     'Client IP' => "IP клиента",
@@ -18,6 +20,28 @@ return [
     'Created by' => "Автор создания",
     'Updated by' => "Автор изменений",
     'Release' => "Освобождение",
+    'Actions' => "Действия",
+
+    'All statuses' => "Все статусы",
+    'Banned' => "Заблокирован",
+    'Unbanned' => "Разлокирован",
+    'Released' => "Освобождён",
+
+    'All reasons' => "Все причины",
+    'Manual blocking' => "Ручная блокировка",
+    'Rate limit' => "Превышение лимита",
+    'Overdrive attack' => "Атака переполнения",
+    'XSS-attack' => "XSS-атака",
+    'LFI/RFI/RCE attack' => "LFI/RFI/RCE атака",
+    'PHP-injection' => "PHP-инъекция",
+    'SQL-injection' => "SQL-инъекция",
+
+    'First page' => 'Первая страница',
+    'Last page' => 'Последняя страница',
+    '&larr; Prev page' => '&larr; Предыдущая страница',
+    'Next page &rarr;' => 'Следующая страница &rarr;',
+
+    'Add new' => "Добавить новый",
 
     'Rate limit exceeded.' => "Превышение лимита запросов.",
     'Overdrive attack detected.' => "Обнаружена атака овердрайва.",

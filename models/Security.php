@@ -336,7 +336,7 @@ class Security extends \yii\db\ActiveRecord
             ];
 
         $list[] = [
-            'manual' => Yii::t('app/modules/guard', 'Manual'),
+            'manual' => Yii::t('app/modules/guard', 'Manual blocking'),
             'ratelimit' => Yii::t('app/modules/guard', 'Rate limit'),
             'overdrive' => Yii::t('app/modules/guard', 'Overdrive attack'),
             'xss' => Yii::t('app/modules/guard', 'XSS-attack'),
@@ -376,6 +376,28 @@ class Security extends \yii\db\ActiveRecord
         } else {
             return true;
         }
+    }
+
+    /**
+     * @return object of \yii\db\ActiveQuery
+     */
+    public function getCreatedBy()
+    {
+        if (class_exists('\wdmg\users\models\Users'))
+            return $this->hasOne(\wdmg\users\models\Users::class, ['id' => 'created_by']);
+        else
+            return $this->created_by;
+    }
+
+    /**
+     * @return object of \yii\db\ActiveQuery
+     */
+    public function getUpdatedBy()
+    {
+        if (class_exists('\wdmg\users\models\Users'))
+            return $this->hasOne(\wdmg\users\models\Users::class, ['id' => 'updated_by']);
+        else
+            return $this->updated_by;
     }
 
     /**

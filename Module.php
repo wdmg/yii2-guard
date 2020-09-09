@@ -226,13 +226,20 @@ class Module extends BaseModule
      */
     public function dashboardNavItems($createLink = false)
     {
-        $items = [
+        return [
             'label' => $this->name,
             'url' => [$this->routePrefix . '/'. $this->id],
             'icon' => 'fa fa-fw fa-shield-alt',
-            'active' => in_array(\Yii::$app->controller->module->id, [$this->id])
+            'active' => in_array(\Yii::$app->controller->module->id, [$this->id]),
+            'items' => [
+                [
+                    'label' => Yii::t('app/modules/guard', 'Banned List'),
+                    'url' => [$this->routePrefix . '/guard/banned/'],
+                    'icon' => 'fa fa-fw fa-traffic-light',
+                    'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'banned'),
+                ]
+            ]
         ];
-        return $items;
     }
 
     /**
