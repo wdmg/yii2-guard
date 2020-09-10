@@ -1,6 +1,7 @@
 <?php
 
 use wdmg\widgets\DatePicker;
+use yii\bootstrap\Modal;
 use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\GridView;
@@ -22,8 +23,10 @@ $this->params['breadcrumbs'][] = $this->title;
     </h1>
 </div>
 <div class="guard-banned-index">
-
-    <?php Pjax::begin(); ?>
+    <?php Pjax::begin([
+        'id' => "guardBannedAjax",
+        'timeout' => 5000
+    ]); ?>
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
@@ -33,6 +36,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'attribute' => 'client_ip',
+                'label' => Yii::t('app/modules/guard','Сlient IP/Net'),
                 'format' => 'html',
                 'headerOptions' => [
                     'class' => 'text-center'
@@ -41,13 +45,20 @@ $this->params['breadcrumbs'][] = $this->title;
                     'class' => 'text-center'
                 ],
                 'value' => function($data) {
-                    return long2ip(intval($data->client_ip));
+
+                    $output = '';
+                    if ($data->client_ip)
+                        $output .= long2ip(intval($data->client_ip));
+
+                    if ($data->client_net)
+                        $output .= (!empty($output) ? ', ' : '') . $data->client_net;
+
+                    return $output;
                 }
             ],
 
-            'client_net',
-
-            /*'user_agent',*/
+            /*'client_net',
+            'user_agent',*/
 
             [
                 'attribute' => 'reason',
@@ -235,9 +246,41 @@ $this->params['breadcrumbs'][] = $this->title;
     ]); ?>
     <hr/>
     <div>
-        <?= Html::a(Yii::t('app/modules/guard', 'Add new'), ['banned/create'], ['class' => 'btn btn-add btn-success pull-right']) ?>
+        <?= Html::a(Yii::t('app/modules/guard', 'Add/update'), ['banned/create'], [
+            'class' => 'btn btn-add btn-success pull-right',
+            'data-toggle' => 'modal',
+            'data-target' => '#addNewBanned',
+            'data-pjax' => '1'
+        ]) ?>
     </div>
     <?php Pjax::end(); ?>
 </div>
+
+<?php $this->registerJs(<<< JS
+$('body').delegate('[data-toggle="modal"][data-target="#addNewBanned"]', 'click', function(event) {
+    event.preventDefault();
+    $.get(
+        $(this).attr('href'),
+        function (data) {
+            $('#addNewBanned .modal-body').html($(data).remove('.modal-footer'));
+            if ($(data).find('.modal-footer').length > 0) {
+                $('#addNewBanned').find('.modal-footer').remove();
+                $('#addNewBanned .modal-content').append($(data).find('.modal-footer'));
+            }
+            $('#addNewBanned').modal();
+        }  
+    );
+});
+JS
+); ?>
+<?php Modal::begin([
+    'id' => 'addNewBanned',
+    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Banned Client').'</h4>',
+    'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">'.Yii::t('app/modules/guard', 'Close').'</a>',
+    'clientOptions' => [
+        'show' => false
+    ]
+]); ?>
+<?php Modal::end(); ?>
 
 <?php echo $this->render('../_debug'); ?>

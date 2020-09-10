@@ -100,9 +100,12 @@ class Security extends \yii\db\ActiveRecord
     public function rules()
     {
         $rules = [
-            [['client_ip', 'status'], 'required'],
+            ['client_ip', 'required', 'when' => function($model) {
+                return $model->reason !== 'manual';
+            }],
             [['client_ip', 'range_start', 'range_end'], 'integer', 'min' => ip2long('0.0.0.0'), 'max' => ip2long('255.255.255.255')],
-            ['status', 'integer', 'max' => 1],
+            ['status', 'required'],
+            ['status', 'integer'],
             ['reason', 'in', 'range' => array_keys($this->getReasonsList(false))],
             [['client_net', 'user_agent'], 'string', 'max' => 255],
             [['created_at', 'updated_at', 'release_at'], 'safe'],

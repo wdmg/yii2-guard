@@ -4,11 +4,14 @@ namespace wdmg\guard\controllers;
 
 use Yii;
 use wdmg\guard\models\Security;
+use wdmg\guard\models\BannedForm;
 use wdmg\guard\models\SecuritySearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
+use yii\web\Response;
+use yii\widgets\ActiveForm;
 
 /**
  * BannedController implements the CRUD actions for Security model.
@@ -66,6 +69,54 @@ class BannedController extends Controller
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionCreate()
+    {
+
+        $model = new BannedForm();
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ActiveForm::validate($model);
+        }
+
+        if (!Yii::$app->request->isAjax) {
+            if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+                if ($model->save()) {
+
+                    // Log activity
+                    $this->module->logActivity(
+                        'Banned client with IP `' . $model->client_ip . '` has been successfully added.',
+                        $this->uniqueId . ":" . $this->action->id,
+                        'success',
+                        1
+                    );
+
+                    Yii::$app->getSession()->setFlash(
+                        'success',
+                        Yii::t('app/modules/guard', 'Banned client has been successfully added!')
+                    );
+                } else {
+
+                    // Log activity
+                    $this->module->logActivity(
+                        'An error occurred while add the new banned client with IP: ' . $model->client_ip,
+                        $this->uniqueId . ":" . $this->action->id,
+                        'danger',
+                        1
+                    );
+
+                    Yii::$app->getSession()->setFlash(
+                        'danger',
+                        Yii::t('app/modules/guard', 'An error occurred while add the new banned client.')
+                    );
+                }
+            }
+        }
+
+        return $this->renderAjax('_form', [
+            'model' => $model
         ]);
     }
 

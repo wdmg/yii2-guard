@@ -9,7 +9,9 @@ return [
 
     'ID' => "ИД",
     'Client IP' => "IP клиента",
-    'Client Net' => "Сети клиента",
+    'Client Net' => "Сеть клиента",
+    'IP or/and Net' => "IP и/или сеть",
+    'Сlient IP/Net' => "IP клиента/сеть",
     'IP range (start)' => "IP диапазон (начало)",
     'IP range (end)' => "IP диапазон (конец)",
     'User Agent' => "Польз. агент",
@@ -24,8 +26,16 @@ return [
 
     'All statuses' => "Все статусы",
     'Banned' => "Заблокирован",
-    'Unbanned' => "Разлокирован",
+    'Unbanned' => "Разблокирован",
     'Released' => "Освобождён",
+
+    'Ban' => "Заблокировать",
+    'Unban' => "Разблокировать",
+    'Release' => "Освободить",
+
+    'Close' => "Закрыть",
+    'Save' => "Сохранить",
+    'Apply' => "Применить",
 
     'All reasons' => "Все причины",
     'Manual blocking' => "Ручная блокировка",
@@ -41,7 +51,7 @@ return [
     '&larr; Prev page' => '&larr; Предыдущая страница',
     'Next page &rarr;' => 'Следующая страница &rarr;',
 
-    'Add new' => "Добавить новый",
+    'Add/update' => "Добавить/редактировать",
 
     'Rate limit exceeded.' => "Превышение лимита запросов.",
     'Overdrive attack detected.' => "Обнаружена атака овердрайва.",
