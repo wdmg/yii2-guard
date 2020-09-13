@@ -12,11 +12,11 @@ use wdmg\widgets\SelectInput;
 
 ?>
 
-<div class="banned-form-add">
+<div class="banned-form-test">
     <?php
     $form = ActiveForm::begin([
-        'id' => "formAdd",
-        'action' => ['banned/create'],
+        'id' => "formTest",
+        'action' => ['banned/test'],
         'enableAjaxValidation' => true,
         'options' => [
             'enctype' => 'multipart/form-data'
@@ -37,28 +37,12 @@ use wdmg\widgets\SelectInput;
         </ul>
     </div>
 
-    <?= $form->field($model, 'status')->widget(SelectInput::class, [
-        'items' => $model->getStatuses(),
-        'options' => [
-            'id' => 'banned-form-status',
-            'class' => 'form-control'
-        ]
-    ]) ?>
-
-    <?= $form->field($model, 'release_at')->widget(SelectInput::class, [
-        'items' => $model->getReleases(),
-        'options' => [
-            'id' => 'banned-form-release',
-            'class' => 'form-control'
-        ]
-    ]) ?>
-
     <div class="modal-footer">
         <?= Html::a(Yii::t('app/modules/guard', 'Close'), "#", [
             'class' => 'btn btn-default pull-left',
             'data-dismiss' => 'modal'
         ]); ?>
-        <?= Html::submitButton(Yii::t('app/modules/guard', 'Apply'), ['class' => 'btn btn-save btn-success pull-right']) ?>
+        <?= Html::submitButton(Yii::t('app/modules/guard', 'Go'), ['class' => 'btn btn-refresh btn-success pull-right']) ?>
     </div>
     <?php ActiveForm::end(); ?>
 </div>
@@ -79,7 +63,7 @@ $(document).ready(function() {
         });
         return false; // prevent default form submission
     }
-    $("#formAdd").on("afterValidateAttribute", afterValidateAttribute);
+    $("#formTest").on("afterValidateAttribute", afterValidateAttribute);
 });
 JS
 ); ?>

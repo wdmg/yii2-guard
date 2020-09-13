@@ -20,7 +20,7 @@ class m200903_023622_guard_banned extends Migration
 
         $this->createTable('{{%guard_banned}}', [
             'id' => $this->primaryKey(),
-            'client_ip' => $this->bigInteger(15)->unsigned()->notNull(),
+            'client_ip' => $this->bigInteger(15)->unsigned()->null(),
             'client_net' => $this->string(255)->null(),
             'range_start' => $this->bigInteger(15)->unsigned()->null(),
             'range_end' => $this->bigInteger(15)->unsigned()->null(),

@@ -103,11 +103,11 @@ class Security extends \yii\db\ActiveRecord
             ['client_ip', 'required', 'when' => function($model) {
                 return $model->reason !== 'manual';
             }],
-            [['client_ip', 'range_start', 'range_end'], 'integer', 'min' => ip2long('0.0.0.0'), 'max' => ip2long('255.255.255.255')],
-            ['status', 'required'],
+            [['client_ip', 'range_start', 'range_end'], 'integer', 'min' => ip2long('0.0.0.0'), 'max' => ip2long('255.255.255.255'), 'skipOnEmpty' => true],
+            [['reason', 'status'], 'required'],
             ['status', 'integer'],
             ['reason', 'in', 'range' => array_keys($this->getReasonsList(false))],
-            [['client_net', 'user_agent'], 'string', 'max' => 255],
+            [['client_net', 'user_agent'], 'string', 'max' => 255, 'skipOnEmpty' => true],
             [['created_at', 'updated_at', 'release_at'], 'safe'],
         ];
 
@@ -147,6 +147,38 @@ class Security extends \yii\db\ActiveRecord
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function beforeValidate()
+    {
+        if ($this->client_ip && !is_long($this->client_ip))
+            $this->client_ip = ip2long($this->client_ip);
+
+        if ($this->range_start && !is_long($this->range_start))
+            $this->range_start = ip2long($this->range_start);
+
+        if ($this->range_end && !is_long($this->range_end))
+            $this->range_end = ip2long($this->range_end);
+
+        if ($this->client_net && !is_string($this->client_net))
+            $this->client_net = '';
+
+
+        return parent::beforeValidate();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function beforeSave($insert)
+    {
+        if (!$this->release_at)
+            $this->release_at = $this->getReleaseDate();
+
+        return parent::beforeSave($insert);
+    }
+
+    /**
      * Blocking current IP and subnet
      *
      * @param $ip
@@ -155,7 +187,7 @@ class Security extends \yii\db\ActiveRecord
      */
     protected function setBanned($ip, $user_agent, $reason)
     {
-        if ((IpAddressHelper::ipVersion($ip) == "IPv4" && !IpAddressHelper::isLocalIp($ip))) {
+        if ((IpAddressHelper::getIpVersion($ip, true) == "IPv4" && !IpAddressHelper::isLocalIp($ip))) {
 
             $this->client_ip = ip2long($ip);
 
@@ -188,7 +220,7 @@ class Security extends \yii\db\ActiveRecord
     protected function getHasBanned($ip)
     {
         $banned = null;
-        if ((IpAddressHelper::ipVersion($ip) == "IPv4" && !IpAddressHelper::isLocalIp($ip))) {
+        if ((IpAddressHelper::getIpVersion($ip, true) == "IPv4" && !IpAddressHelper::isLocalIp($ip))) {
 
             $query = self::find();
             $query->where(['status' => self::GUARD_STATUS_IS_BANNED]);
@@ -270,11 +302,14 @@ class Security extends \yii\db\ActiveRecord
     /**
      * Get client IP
      *
-     * @param $request Request
+     * @param null|source $request Request
      * @return string or null
      */
-    public static function getRemoteIp($request)
+    public static function getRemoteIp($request = null)
     {
+        if (!$request)
+            $request = Yii::$app->getRequest();
+
         $client_ip = $request->userIP;
         if(!$client_ip)
             $client_ip = $request->remoteIP;
@@ -402,10 +437,21 @@ class Security extends \yii\db\ActiveRecord
      *
      * @return false|string
      */
-    private function getReleaseDate()
-    {
-        $release = strtotime("+ " . trim($this->releaseTime), strtotime(date('Y-m-d H:i:s')));
-        return date('Y-m-d H:i:s', $release);
+
+    /**
+     * Returns the date / time the restrictions were lifted after blocking.
+     *
+     * @param null|string $period, release time, like: 1 hour, 1 day, 1 week
+     * @return false|string
+     */
+    protected function getReleaseDate($period = null) {
+        if (!$period)
+            $period = $this->releaseTime;
+
+        if ($period != 'lifetime')
+            return date('Y-m-d H:i:s', strtotime("+ " . trim($period), strtotime(date('Y-m-d H:i:s'))));
+        else
+            return date('Y-m-d H:i:s', null);
     }
 
     /**

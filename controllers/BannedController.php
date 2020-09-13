@@ -42,7 +42,7 @@ class BannedController extends Controller
         ];
 
         // If auth manager not configured use default access control
-        if(!Yii::$app->authManager) {
+        if (!Yii::$app->authManager) {
             $behaviors['access'] = [
                 'class' => AccessControl::class,
                 'rules' => [
@@ -83,39 +83,52 @@ class BannedController extends Controller
 
         if (!Yii::$app->request->isAjax) {
             if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-                if ($model->save()) {
-
-                    // Log activity
-                    $this->module->logActivity(
-                        'Banned client with IP `' . $model->client_ip . '` has been successfully added.',
-                        $this->uniqueId . ":" . $this->action->id,
-                        'success',
-                        1
-                    );
-
+                $result = $model->save();
+                if (!empty($result['errors']) && $result['count'] == 0) {
                     Yii::$app->getSession()->setFlash(
-                        'success',
-                        Yii::t('app/modules/guard', 'Banned client has been successfully added!')
+                        'danger',
+                        Yii::t('app/modules/guard', 'An error occurred while add the addresses: {errors}', [
+                            'errors' => \yii\helpers\Html::ul((array)$result['errors'])
+                        ])
+                    );
+                } else if (!empty($result['errors']) && $result['count'] > 0) {
+                    Yii::$app->getSession()->setFlash(
+                        'warning',
+                        Yii::t('app/modules/guard', '{count} addresses were added successfully, but some errors occurred: {errors}', [
+                            'errors' => \yii\helpers\Html::ul((array)$result['errors']),
+                            'count' => $result['count']
+                        ])
                     );
                 } else {
-
-                    // Log activity
-                    $this->module->logActivity(
-                        'An error occurred while add the new banned client with IP: ' . $model->client_ip,
-                        $this->uniqueId . ":" . $this->action->id,
-                        'danger',
-                        1
-                    );
-
                     Yii::$app->getSession()->setFlash(
-                        'danger',
-                        Yii::t('app/modules/guard', 'An error occurred while add the new banned client.')
+                        'success',
+                        Yii::t('app/modules/guard', '{count} addresses added successfully!', [
+                            'count' => $result['count']
+                        ])
                     );
                 }
             }
+            if (!empty($model->errors)) {
+                Yii::$app->getSession()->setFlash(
+                    'danger',
+                    Yii::t('app/modules/guard', 'An error occurred while add the addresses: {errors}', [
+                        'errors' => \yii\helpers\Html::ul((array)$model->errors)
+                    ])
+                );
+            }
+            return $this->redirect(['index']);
         }
 
         return $this->renderAjax('_form', [
+            'model' => $model
+        ]);
+    }
+
+    public function actionTest()
+    {
+        $model = new BannedForm();
+
+        return $this->renderAjax('_test', [
             'model' => $model
         ]);
     }
@@ -160,6 +173,6 @@ class BannedController extends Controller
             return $model;
         }
 
-        throw new NotFoundHttpException(Yii::t('app/modules/forms', 'The requested page does not exist.'));
+        throw new NotFoundHttpException(Yii::t('app/modules/guard', 'The requested page does not exist.'));
     }
 }

@@ -121,7 +121,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'created_at',
                 'label' => Yii::t('app/modules/guard','Created'),
                 'format' => 'html',
-                'filter' => DatePicker::widget([
+                /*'filter' => DatePicker::widget([
                     'model' => $searchModel,
                     'attribute' => 'created_at',
                     'options' => [
@@ -135,7 +135,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'format' => 'DD.MM.YYYY HH:mm:ss',
                         'toggle' => '.input-group-btn > button',
                     ]
-                ]),
+                ]),*/
                 'value' => function($data) {
 
                     $output = "";
@@ -159,7 +159,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'updated_at',
                 'label' => Yii::t('app/modules/guard','Updated'),
                 'format' => 'html',
-                'filter' => DatePicker::widget([
+                /*'filter' => DatePicker::widget([
                     'model' => $searchModel,
                     'attribute' => 'updated_at',
                     'options' => [
@@ -173,7 +173,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'format' => 'DD.MM.YYYY HH:mm:ss',
                         'toggle' => '.input-group-btn > button',
                     ]
-                ]),
+                ]),*/
                 'value' => function($data) {
 
                     $output = "";
@@ -197,7 +197,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'release_at',
                 'label' => Yii::t('app/modules/guard','Release'),
                 'format' => 'html',
-                'filter' => DatePicker::widget([
+                /*'filter' => DatePicker::widget([
                     'model' => $searchModel,
                     'attribute' => 'release_at',
                     'options' => [
@@ -211,7 +211,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'format' => 'DD.MM.YYYY HH:mm:ss',
                         'toggle' => '.input-group-btn > button',
                     ]
-                ]),
+                ]),*/
                 'value' => function($data) {
                     return Yii::$app->formatter->format($data->release_at, 'datetime');
                 }
@@ -244,19 +244,40 @@ $this->params['breadcrumbs'][] = $this->title;
             'nextPageLabel'  => Yii::t('app/modules/guard', 'Next page &rarr;')
         ],
     ]); ?>
+    <?php Pjax::end(); ?>
     <hr/>
-    <div>
-        <?= Html::a(Yii::t('app/modules/guard', 'Add/update'), ['banned/create'], [
-            'class' => 'btn btn-add btn-success pull-right',
+    <div class="btn-group pull-right">
+        <?= Html::a(Yii::t('app/modules/guard', 'Test IP/Network'), ['banned/test'], [
+            'class' => 'btn btn-info',
             'data-toggle' => 'modal',
-            'data-target' => '#addNewBanned',
-            'data-pjax' => '1'
+            'data-target' => '#testIpNetwork'
+        ]) ?>
+        <?= Html::a(Yii::t('app/modules/guard', 'Add/update'), ['banned/create'], [
+            'class' => 'btn btn-add btn-success',
+            'data-toggle' => 'modal',
+            'data-target' => '#addNewBanned'
         ]) ?>
     </div>
-    <?php Pjax::end(); ?>
 </div>
 
 <?php $this->registerJs(<<< JS
+$('body').delegate('[data-toggle="modal"][data-target="#testIpNetwork"]', 'click', function(event) {
+    event.preventDefault();
+    $.get(
+        $(this).attr('href'),
+        function (data) {
+            $('#testIpNetwork .modal-body').html($(data).remove('.modal-footer'));
+            if ($(data).find('.modal-footer').length > 0) {
+                $('#testIpNetwork').find('.modal-footer').remove();
+                $('#testIpNetwork .modal-content').append($(data).find('.modal-footer'));
+            }
+            $('#testIpNetwork button[type="submit"]').on('click', function(event) {
+              $('#testIpNetwork form').submit();
+            });
+            $('#testIpNetwork').modal();
+        }  
+    );
+});
 $('body').delegate('[data-toggle="modal"][data-target="#addNewBanned"]', 'click', function(event) {
     event.preventDefault();
     $.get(
@@ -267,15 +288,29 @@ $('body').delegate('[data-toggle="modal"][data-target="#addNewBanned"]', 'click'
                 $('#addNewBanned').find('.modal-footer').remove();
                 $('#addNewBanned .modal-content').append($(data).find('.modal-footer'));
             }
+            $('#addNewBanned button[type="submit"]').on('click', function(event) {
+              $('#addNewBanned form').submit();
+            });
             $('#addNewBanned').modal();
         }  
     );
 });
 JS
 ); ?>
+
+<?php Modal::begin([
+    'id' => 'testIpNetwork',
+    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Test IP or network').'</h4>',
+    'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">'.Yii::t('app/modules/guard', 'Close').'</a>',
+    'clientOptions' => [
+        'show' => false
+    ]
+]); ?>
+<?php Modal::end(); ?>
+
 <?php Modal::begin([
     'id' => 'addNewBanned',
-    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Banned Client').'</h4>',
+    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Block by IP or network').'</h4>',
     'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">'.Yii::t('app/modules/guard', 'Close').'</a>',
     'clientOptions' => [
         'show' => false

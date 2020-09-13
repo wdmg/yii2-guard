@@ -2,6 +2,7 @@ Changelog
 =========
 
 ## 1.*
+ * Validation, Translation, Self-blocking check
  * Added blocking by IP functionality
 
 ## 1.0.2 (2020-03-25)
