@@ -28,18 +28,26 @@ return [
     'Banned' => "Заблокирован",
     'Unbanned' => "Разблокирован",
     'Released' => "Освобождён",
+    'Deleted' => "Удалён",
+    'Not found' => "Не найден",
+    'Not banned' => "Не блокируется",
 
     'Block by IP or network' => "Заблокировать по IP или сети",
     '{count} addresses added successfully!' => "{count} адрес(ов) успешно добавлены!",
     '{count} addresses were added successfully, but some errors occurred: {errors}' => "{count} адрес(ов) добавлено успешно, но возникли некоторые ошибки: {errors}",
     'An error occurred while add the addresses: {errors}' => "Ошибка при добавлении адресов: {errors}",
 
+    'Test IP' => "Тестировать IP",
     'Test IP/Network' => "Тестировать IP/Cеть",
     'Test IP or network' => "Тестировать IP или сеть",
+
+    'The `{attribute}` attribute must be an array list.' => "Атрибут `{attribute}` должен быть списком массива.",
+    'The `{attribute}` list must not exceed 100 items.' => "Список `{attribute}` не должен превышать более 100 позиций.",
 
     'Ban' => "Заблокировать",
     'Unban' => "Разблокировать",
     'Release' => "Освободить",
+    'Delete' => "Удалить",
 
     'Close' => "Закрыть",
     'Save' => "Сохранить",
@@ -62,6 +70,7 @@ return [
     'It looks like your IP belongs to the blocked `{subnet}` subnet and cannot be blocked.' => "Похоже, что Ваш IP входит в блокируемую подсеть `{subnet}` и не может быть заблокирован.",
     'It looks like your IP is in the blocking range `{start} - {end}` and cannot be blocked.' => "Похоже, что Ваш IP входит в блокируемый диапазон `{start} - {end}` и не может быть заблокирован.",
 
+    'Specify a list of IP addresses (each address - on a new line). The following options are allowed:' => "Укажите список IP адресов (каждый адрес - с новой строки). Разрешены такие варианты записи как:",
     'Specify a list of IP addresses or networks (each address or network - on a new line). The following options are allowed:' => "Укажите список IP адресов или сетей (каждый адрес или сеть - с новой строки). Разрешены такие варианты записи как:",
     'IPv4 address (for example: 172.104.89.12)' => "IPv4 адрес (например: 172.104.89.12)",
     'network address in the CIDR (for example: 172.104.89.12/24)' => "адрес сети в виде CIDR (например: 172.104.89.12/24)",

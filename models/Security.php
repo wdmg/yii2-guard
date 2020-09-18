@@ -104,8 +104,8 @@ class Security extends \yii\db\ActiveRecord
                 return $model->reason !== 'manual';
             }],
             [['client_ip', 'range_start', 'range_end'], 'integer', 'min' => ip2long('0.0.0.0'), 'max' => ip2long('255.255.255.255'), 'skipOnEmpty' => true],
-            [['reason', 'status'], 'required'],
-            ['status', 'integer'],
+            [['reason', 'status'], 'required', 'on' => self::SCENARIO_DEFAULT],
+            ['status', 'integer', 'on' => self::SCENARIO_DEFAULT],
             ['reason', 'in', 'range' => array_keys($this->getReasonsList(false))],
             [['client_net', 'user_agent'], 'string', 'max' => 255, 'skipOnEmpty' => true],
             [['created_at', 'updated_at', 'release_at'], 'safe'],
@@ -220,6 +220,13 @@ class Security extends \yii\db\ActiveRecord
     protected function getHasBanned($ip)
     {
         $banned = null;
+
+        /*if (is_array($ip)) {
+            foreach ($ip as $once) {
+                $banned[] = self::getHasBanned($once);
+            }
+        }*/
+
         if ((IpAddressHelper::getIpVersion($ip, true) == "IPv4" && !IpAddressHelper::isLocalIp($ip))) {
 
             $query = self::find();
@@ -227,8 +234,8 @@ class Security extends \yii\db\ActiveRecord
             $query->andWhere(['>=', 'release_at', date('Y-m-d H:i:s')]);
             $query->andWhere(['client_ip' => ip2long($ip)]);
 
-            if ($this->useIpRange && $cidr = IpAddressHelper::ip2cidr($ip, 1)) {
-                if ($range = IpAddressHelper::cidr2range($cidr, true)) {
+            if ($this->useIpRange && $cidr = IpAddressHelper::ip2cidr($ip, null, 2)) {
+                if ($range = IpAddressHelper::cidr2range($cidr, 1)) {
                     $this->range_start = ip2long($range->start);
                     $this->range_end = ip2long($range->end);
                     $query->orWhere(['and',
@@ -261,6 +268,8 @@ class Security extends \yii\db\ActiveRecord
 
         if ($reason && $this->getNeedBann($ip))
             $this->setBanned($ip, $user_agent, $reason);
+
+
 
         if ($reason == 'ratelimit')
             throw new HttpException('429', (!empty($message)) ? $message : Yii::t('app/modules/guard', 'Rate limit exceeded.'));

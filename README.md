@@ -1,15 +1,22 @@
-[![Yii2](https://img.shields.io/badge/required-Yii2_v2.0.33-blue.svg)](https://packagist.org/packages/yiisoft/yii2)
+[![Yii2](https://img.shields.io/badge/required-Yii2_v2.0.35-blue.svg)](https://packagist.org/packages/yiisoft/yii2)
 [![Downloads](https://img.shields.io/packagist/dt/wdmg/yii2-guard.svg)](https://packagist.org/packages/wdmg/yii2-guard)
 [![Packagist Version](https://img.shields.io/packagist/v/wdmg/yii2-guard.svg)](https://packagist.org/packages/wdmg/yii2-guard)
-![Progress](https://img.shields.io/badge/progress-in_development-red.svg)
+![Progress](https://img.shields.io/badge/progress-ready_to_use-green.svg)
 [![GitHub license](https://img.shields.io/github/license/wdmg/yii2-guard.svg)](https://github.com/wdmg/yii2-guard/blob/master/LICENSE)
 
-# Yii2 guard
-Security System for Yii2
+<img src="./docs/images/yii2-guard.png" width="100%" alt="Yii2 Composite Forms" />
+
+# Yii2 Guard
+Security system for Yii2. The extension is able to detect and repel Overdrive attack, XSS attack, LFI / RFI / RCE attack, PHP / SQL injection attacks, and block by over rate limit.
+As well as block the user by IP and network (possible to add blocking client manually).
+
+This module is an integral part of the [Butterfly.СMS](https://butterflycms.com/) content management system, but can also be used as an standalone extension.
+
+Copyrights (c) 2019-2020 [W.D.M.Group, Ukraine](https://wdmg.com.ua/)
 
 # Requirements 
 * PHP 5.6 or higher
-* Yii2 v.2.0.33 and newest
+* Yii2 v.2.0.35 and newest
 * [Yii2 Base](https://github.com/wdmg/yii2-base) module (required)
 
 # Installation
@@ -65,7 +72,8 @@ To add a module to the project, add the following data in your configuration fil
             'maxAttempts': 5, // maximum number of attack attempts before blocking
             'attemptsDuration': 3600, // time in seconds of storage the history of attempted attacks in the cache
             'releaseTime': 3600, // time in seconds of removal restrictions (time of blocking)
-            'useIpRange': true // use blocking also by a range of network IP addresses
+            'useIpRange': true, // use blocking also by a range of network IP addresses
+            'forbiddenLayout': "@wdmg/guard/views/layouts/default" // use forbidden error layout for frontend
         ],
         ...
     ],
@@ -85,7 +93,8 @@ Use the `Module::dashboardNavItems()` method of the module to generate a navigat
         ]);
     ?>
 
-# Status and version [in progress development]
+# Status and version [ready to use]
+* v.1.1.0 - Up to date dependencies
 * v.1.0.2 - Up to date dependencies
 * v.1.0.1 - Fixed deprecated class declaration
 * v.1.0.0 - Added base module and model, behaviors and filters

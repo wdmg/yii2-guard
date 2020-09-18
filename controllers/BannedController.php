@@ -63,10 +63,12 @@ class BannedController extends Controller
      */
     public function actionIndex()
     {
+        $model = new BannedForm();
         $searchModel = new SecuritySearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
+            'model' => $model,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
@@ -76,6 +78,7 @@ class BannedController extends Controller
     {
 
         $model = new BannedForm();
+        $model->scenario = "add";
         if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
             Yii::$app->response->format = Response::FORMAT_JSON;
             return ActiveForm::validate($model);
@@ -127,10 +130,55 @@ class BannedController extends Controller
     public function actionTest()
     {
         $model = new BannedForm();
+        $model->scenario = "test";
+        if (Yii::$app->request->isAjax && $post = Yii::$app->request->post()) {
+            if (!isset($post['process']) && $model->load($post)) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ActiveForm::validate($model);
+            } else if (isset($post['process']) && $model->load($post)) {
+                if ($model->validate() && $results = $model->test()) {
+                    return $this->renderAjax('_results', [
+                        'results' => $results,
+                        'model' => $model
+                    ]);
+                }
+            }
+        }
 
         return $this->renderAjax('_test', [
             'model' => $model
         ]);
+    }
+
+    public function actionBulk() {
+        if (Yii::$app->request->isAjax && $post = Yii::$app->request->post()) {
+
+            $model = new BannedForm();
+            if (isset($post['action']) && isset($post['selected'])) {
+
+                $action = $post['action'];
+                $selected = $post['selected'];
+                switch ($action) {
+                    case $model::GUARD_STATUS_IS_BANNED:
+                        $model::updateAll(['status' => $model::GUARD_STATUS_IS_BANNED], ['id' => $selected]);
+                        break;
+
+                    case $model::GUARD_STATUS_IS_UNBANNED:
+                        $model::updateAll(['status' => $model::GUARD_STATUS_IS_UNBANNED], ['id' => $selected]);
+                        break;
+
+                    case $model::GUARD_STATUS_IS_RELEASED:
+                        $model::updateAll(['status' => $model::GUARD_STATUS_IS_RELEASED], ['id' => $selected]);
+                        break;
+
+                    case $model::GUARD_STATUS_IS_DELETED:
+                        $model::deleteAll(['id' => $selected]);
+                        break;
+
+                }
+            }
+        }
+        return $this->redirect(['index']);
     }
 
     /**

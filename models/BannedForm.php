@@ -14,6 +14,10 @@ use wdmg\helpers\ArrayHelper;
  */
 class BannedForm extends Security
 {
+    const SCENARIO_ADD = 'add';
+    const SCENARIO_TEST = 'test';
+    const GUARD_STATUS_IS_DELETED = 4;
+
     public $ip = '';
     public $reason = 'manual';
     public $client_net = '';
@@ -27,12 +31,31 @@ class BannedForm extends Security
     public function rules()
     {
         $rules = [
-            [['ip', 'status'], 'required'],
+            [['ip', 'status'], 'required', 'on' => self::SCENARIO_ADD],
+            [['ip'], 'required', 'on' => self::SCENARIO_TEST],
             ['ip', 'trim'],
-            ['ip', 'each', 'rule' => ['ip', 'subnet' => null, 'ranges' => ['!system', '!private', 'any'], 'ipv6' => false], 'skipOnEmpty' => false],
+            ['status', 'integer', 'on' => self::SCENARIO_ADD],
+            ['ip', 'maxCount'],
+            ['ip', 'each', 'rule' => ['ip', 'subnet' => null, 'ranges' => ['!system', '!private', 'any'], 'ipv6' => false], 'skipOnEmpty' => false, 'on' => self::SCENARIO_ADD],
+            ['ip', 'each', 'rule' => ['ip', 'subnet' => false, 'ranges' => ['!system', '!private', 'any'], 'ipv6' => false], 'skipOnEmpty' => false, 'on' => self::SCENARIO_TEST],
             ['release_at', 'in', 'range' => array_keys($this->getReleases())],
         ];
+
         return ArrayHelper::merge(parent::rules(), $rules);
+    }
+
+    public function maxCount($attribute, $params) {
+        if (!is_array($this->$attribute)) {
+            $this->addError($attribute, Yii::t('app/modules/guard', 'The `{attribute}` attribute must be an array list.', [
+                'attribute' => $this->getAttributeLabel($attribute)
+            ]));
+        } else {
+            if (count($this->$attribute) > 100) {
+                $this->addError($attribute, Yii::t('app/modules/guard', 'The `{attribute}` list must not exceed 100 items.', [
+                    'attribute' => $this->getAttributeLabel($attribute)
+                ]));
+            }
+        }
     }
 
     /**
@@ -79,72 +102,25 @@ class BannedForm extends Security
     /**
      * {@inheritdoc}
      */
+    public function attributeLabels()
+    {
+        $labels = [
+            'ip' => Yii::t('app/modules/guard', 'IP or/and Net'),
+            'release_at' => Yii::t('app/modules/guard', 'Blocking period')
+        ];
+        return ArrayHelper::merge(parent::attributeLabels(), $labels);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function save($runValidation = true, $attributeNames = null)
     {
         $count = 0;
-        $data = [];
         $errors = [];
 
         // Prepare data for insert
-        foreach ($this->_ip as $key => $ip) {
-            if (preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/", $ip, $mathes)) { // 172.104.89.0/255.255.255.0
-                if ($cidr = IpAddressHelper::ip2BaseCidr(trim($mathes[1]), trim($mathes[2]))) {
-                    if ($range = IpAddressHelper::cidr2range($cidr, null)) {
-                        $data[] = [
-                            'client_ip' => null,
-                            'client_net' => $cidr,
-                            'range_start' => $range[0],
-                            'range_end' => $range[1]
-                        ];
-                    }
-                }
-            } elseif (preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\-(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/", $ip, $mathes)) { // 172.104.89.0-172.104.89.255
-                $cidrs = IpAddressHelper::range2cidrs(trim($mathes[1]), trim($mathes[2]));
-                foreach ($cidrs as $cidr) {
-                    $range = IpAddressHelper::cidr2range($cidr, null);
-                    $data[] = [
-                        'client_ip' => null,
-                        'client_net' => $cidr,
-                        'range_start' => $range[0],
-                        'range_end' => $range[1]
-                    ];
-                }
-            } elseif (preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,2})/", $ip, $mathes)) { // 172.104.89.12/24
-                $cidr = trim($mathes[0]);
-                if (IpAddressHelper::isValidCidr($cidr)) {
-                    if ($range = IpAddressHelper::cidr2range($cidr, null)) {
-                        $data[] = [
-                            'client_ip' => null,
-                            'client_net' => $cidr,
-                            'range_start' => $range[0],
-                            'range_end' => $range[1]
-                        ];
-                    }
-                }
-            } else if (IpAddressHelper::getIpVersion($ip, true) == "IPv4" && !IpAddressHelper::isLocalIp($ip)) {
-                $item = [];
-                $item['client_ip'] = $ip;
-                if ($netmask = IpAddressHelper::ipMask($ip, false)) {
-                    $cidr = IpAddressHelper::ip2cidr($ip, $netmask, 2);
-                    if (!$cidr)
-                        $cidr = IpAddressHelper::ip2cidr($ip, $netmask, 1);
-
-                    if ($cidr) {
-                        $item['client_net'] = $cidr;
-                        if ($range = IpAddressHelper::cidr2range($cidr, 1)) {
-                            $item['range_start'] = $range->start;
-                            $item['range_end'] = $range->end;
-                        }
-                    }
-                }
-                $data[] = $item;
-            } else {
-                continue;
-            }
-        }
-
-        // Unique data for insertion
-        $data = ArrayHelper::unique($data, ['client_ip', 'range_start', 'range_end']);
+        $data = $this->prepare($this->_ip);
 
         // Batch insert
         foreach ($data as $item) {
@@ -211,16 +187,87 @@ class BannedForm extends Security
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function attributeLabels()
-    {
-        $labels = [
-            'ip' => Yii::t('app/modules/guard', 'IP or/and Net'),
-            'release_at' => Yii::t('app/modules/guard', 'Blocking period')
-        ];
-        return ArrayHelper::merge(parent::attributeLabels(), $labels);
+
+    public function test() {
+
+        $results = [];
+
+        // Prepare data for test
+        $data = $this->prepare($this->_ip);
+
+        foreach ($data as $item) {
+            $banned = false;
+            if (isset($item['client_ip'])) {
+                if ($this->getHasBanned($item['client_ip']))
+                    $results[$item['client_ip']] = parent::GUARD_STATUS_IS_BANNED;
+                else
+                    $results[$item['client_ip']] = null;
+            }
+        }
+
+        return $results;
+    }
+
+    private function prepare($ips) {
+        $data = [];
+        foreach ($ips as $key => $ip) {
+            if (preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/", $ip, $mathes)) { // 172.104.89.0/255.255.255.0
+                if ($cidr = IpAddressHelper::ip2BaseCidr(trim($mathes[1]), trim($mathes[2]))) {
+                    if ($range = IpAddressHelper::cidr2range($cidr, null)) {
+                        $data[] = [
+                            'client_ip' => null,
+                            'client_net' => $cidr,
+                            'range_start' => $range[0],
+                            'range_end' => $range[1]
+                        ];
+                    }
+                }
+            } elseif (preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\-(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/", $ip, $mathes)) { // 172.104.89.0-172.104.89.255
+                $cidrs = IpAddressHelper::range2cidrs(trim($mathes[1]), trim($mathes[2]));
+                foreach ($cidrs as $cidr) {
+                    $range = IpAddressHelper::cidr2range($cidr, null);
+                    $data[] = [
+                        'client_ip' => null,
+                        'client_net' => $cidr,
+                        'range_start' => $range[0],
+                        'range_end' => $range[1]
+                    ];
+                }
+            } elseif (preg_match("/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/(\d{1,2})/", $ip, $mathes)) { // 172.104.89.12/24
+                $cidr = trim($mathes[0]);
+                if (IpAddressHelper::isValidCidr($cidr)) {
+                    if ($range = IpAddressHelper::cidr2range($cidr, null)) {
+                        $data[] = [
+                            'client_ip' => null,
+                            'client_net' => $cidr,
+                            'range_start' => $range[0],
+                            'range_end' => $range[1]
+                        ];
+                    }
+                }
+            } else if (IpAddressHelper::getIpVersion($ip, true) == "IPv4" && !IpAddressHelper::isLocalIp($ip)) {
+                $item = [];
+                $item['client_ip'] = $ip;
+                if ($netmask = IpAddressHelper::ipMask($ip, false)) {
+                    $cidr = IpAddressHelper::ip2cidr($ip, $netmask, 2);
+                    if (!$cidr)
+                        $cidr = IpAddressHelper::ip2cidr($ip, $netmask, 1);
+
+                    if ($cidr) {
+                        $item['client_net'] = $cidr;
+                        if ($range = IpAddressHelper::cidr2range($cidr, 1)) {
+                            $item['range_start'] = $range->start;
+                            $item['range_end'] = $range->end;
+                        }
+                    }
+                }
+                $data[] = $item;
+            } else {
+                continue;
+            }
+        }
+
+        return ArrayHelper::unique($data, ['client_ip', 'range_start', 'range_end']);
     }
 
     /**
@@ -228,13 +275,18 @@ class BannedForm extends Security
      *
      * @return array
      */
-    public function getStatuses()
+    public function getStatuses($addDelete = false)
     {
-        return [
+        $list = [
             self::GUARD_STATUS_IS_BANNED => Yii::t('app/modules/guard', 'Ban'),
             self::GUARD_STATUS_IS_UNBANNED => Yii::t('app/modules/guard', 'Unban'),
             self::GUARD_STATUS_IS_RELEASED => Yii::t('app/modules/guard', 'Release')
         ];
+
+        if ($addDelete)
+            $list[self::GUARD_STATUS_IS_DELETED] = Yii::t('app/modules/guard', 'Delete');
+
+        return $list;
     }
 
     /**

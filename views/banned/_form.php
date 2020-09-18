@@ -37,21 +37,26 @@ use wdmg\widgets\SelectInput;
         </ul>
     </div>
 
-    <?= $form->field($model, 'status')->widget(SelectInput::class, [
-        'items' => $model->getStatuses(),
-        'options' => [
-            'id' => 'banned-form-status',
-            'class' => 'form-control'
-        ]
-    ]) ?>
-
-    <?= $form->field($model, 'release_at')->widget(SelectInput::class, [
-        'items' => $model->getReleases(),
-        'options' => [
-            'id' => 'banned-form-release',
-            'class' => 'form-control'
-        ]
-    ]) ?>
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <?= $form->field($model, 'status')->widget(SelectInput::class, [
+                'items' => $model->getStatuses(true),
+                'options' => [
+                    'id' => 'banned-form-status',
+                    'class' => 'form-control'
+                ]
+            ]) ?>
+        </div>
+        <div class="col-xs-12 col-md-6">
+            <?= $form->field($model, 'release_at')->widget(SelectInput::class, [
+                'items' => $model->getReleases(),
+                'options' => [
+                    'id' => 'banned-form-release',
+                    'class' => 'form-control'
+                ]
+            ]) ?>
+        </div>
+    </div>
 
     <div class="modal-footer">
         <?= Html::a(Yii::t('app/modules/guard', 'Close'), "#", [

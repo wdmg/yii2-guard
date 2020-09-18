@@ -6,7 +6,7 @@ namespace wdmg\guard;
  * Yii2 Guard
  *
  * @category        Module
- * @version         1.0.2
+ * @version         1.1.0
  * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
  * @link            https://github.com/wdmg/yii2-guard
  * @copyright       Copyright (c) 2019 - 2020 W.D.M.Group, Ukraine
@@ -49,7 +49,7 @@ class Module extends BaseModule
     /**
      * @var string the module version
      */
-    private $version = "1.0.2";
+    private $version = "1.1.0";
 
     /**
      * @var integer, priority of initialization
@@ -167,6 +167,11 @@ class Module extends BaseModule
     public $useIpRange = true;
 
     /**
+     * @var null|string, use forbidden error layout for frontend
+     */
+    public $forbiddenLayout = "@wdmg/guard/views/layouts/default";
+
+    /**
      * {@inheritdoc}
      */
     public function init()
@@ -249,6 +254,12 @@ class Module extends BaseModule
     {
         parent::bootstrap($app);
 
+        /*if (!$this->module->isBackend()) {
+            $app->getUrlManager()->addRules([
+                '/guard/default/error' => 'admin/guard/default/error'
+            ], true);
+        }*/
+
         // Add guard behaviors for web app
         if (!($app instanceof \yii\console\Application) && $this->module) {
 
@@ -272,7 +283,7 @@ class Module extends BaseModule
             // Attach rate-limit behavior
             if ($this->useRateLimit && intval($this->rateLimit) > 0) {
                 $app->attachBehavior('rateLimit', [
-                    'class' => rateLimit::class,
+                    'class' => RateLimit::class,
                     'rateLimit' => intval($this->rateLimit),
                     'security' => new Security(),
                     'module' => $this

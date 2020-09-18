@@ -1,7 +1,8 @@
 Changelog
 =========
 
-## 1.*
+## 1.1.0 (2020-09-18)
+ * Custom layout setup for ErrorHandler
  * Validation, Translation, Self-blocking check
  * Added blocking by IP functionality
 

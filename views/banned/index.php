@@ -28,11 +28,20 @@ $this->params['breadcrumbs'][] = $this->title;
         'timeout' => 5000
     ]); ?>
     <?= GridView::widget([
+        'id' => "guardBannedList",
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'layout' => '{summary}<br\/>{items}<br\/>{summary}<br\/><div class="text-center">{pager}</div>',
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
+            [
+                'class' => 'yii\grid\CheckboxColumn',
+                'checkboxOptions' => function($model) {
+                    return [
+                        'value' => $model->id
+                    ];
+                }
+            ],
 
             [
                 'attribute' => 'client_ip',
@@ -244,63 +253,117 @@ $this->params['breadcrumbs'][] = $this->title;
             'nextPageLabel'  => Yii::t('app/modules/guard', 'Next page &rarr;')
         ],
     ]); ?>
-    <?php Pjax::end(); ?>
     <hr/>
-    <div class="btn-group pull-right">
-        <?= Html::a(Yii::t('app/modules/guard', 'Test IP/Network'), ['banned/test'], [
-            'class' => 'btn btn-info',
-            'data-toggle' => 'modal',
-            'data-target' => '#testIpNetwork'
-        ]) ?>
-        <?= Html::a(Yii::t('app/modules/guard', 'Add/update'), ['banned/create'], [
-            'class' => 'btn btn-add btn-success',
-            'data-toggle' => 'modal',
-            'data-target' => '#addNewBanned'
-        ]) ?>
+    <div class="btn-block">
+        <?= SelectInput::widget([
+            'model' => $model,
+            'attribute' => 'status',
+            'items' => $model->getStatuses(true),
+            'options' => [
+                'id' => 'guardBannedBulk',
+                'class' => 'form-control'
+            ],
+            'pluginOptions' => [
+                'dropdownClass' => '.dropdown .pull-left',
+            ]
+        ]); ?>
+        <div class="btn-group pull-right">
+            <?= Html::a(Yii::t('app/modules/guard', 'Test IP'), ['banned/test'], [
+                'class' => 'btn btn-info',
+                'data-toggle' => 'modal',
+                'data-target' => '#testIpNetwork'
+            ]) ?>
+            <?= Html::a(Yii::t('app/modules/guard', 'Add/update'), ['banned/create'], [
+                'class' => 'btn btn-add btn-success',
+                'data-toggle' => 'modal',
+                'data-target' => '#addNewBanned'
+            ]) ?>
+        </div>
     </div>
+    <?php Pjax::end(); ?>
 </div>
 
-<?php $this->registerJs(<<< JS
-$('body').delegate('[data-toggle="modal"][data-target="#testIpNetwork"]', 'click', function(event) {
-    event.preventDefault();
-    $.get(
-        $(this).attr('href'),
-        function (data) {
-            $('#testIpNetwork .modal-body').html($(data).remove('.modal-footer'));
-            if ($(data).find('.modal-footer').length > 0) {
-                $('#testIpNetwork').find('.modal-footer').remove();
-                $('#testIpNetwork .modal-content').append($(data).find('.modal-footer'));
+
+<?php
+$bulkURL = Url::to(['banned/bulk']);
+$this->registerJs(<<< JS
+    var selected = $('#guardBannedList').yiiGridView('getSelectedRows');
+    if (selected.length) {
+        $('#guardBannedBulk').removeAttr('disabled');
+    } else {
+        $('#guardBannedBulk').attr('disabled', 'disabled');
+    }
+    
+    $('body').delegate('#guardBannedList input[type="checkbox"]', 'click', function(event) {
+        setTimeout(function() {
+            var selected = $('#guardBannedList').yiiGridView('getSelectedRows');
+            if (selected.length) {
+                $('#guardBannedBulk').removeAttr('disabled');
+            } else {
+                $('#guardBannedBulk').attr('disabled', 'disabled');
             }
-            $('#testIpNetwork button[type="submit"]').on('click', function(event) {
-              $('#testIpNetwork form').submit();
+        }, 300);
+    });
+    var bulkSelectBox = $('#guardBannedBulk').attr('data-select');
+    $('body').delegate('#'+ bulkSelectBox + ' a', 'click', function(event) {
+        event.preventDefault();
+        var action = $(event.target).attr('data-value');
+        var selected = $('#guardBannedList').yiiGridView('getSelectedRows');
+        if (selected.length) {
+            $.post({
+                url: "$bulkURL",
+                data: {selected: selected, action: action},
+                success: function(data) {
+                    $.pjax({
+                        container: "#guardBannedAjax"
+                    });
+                },
+                error:function(erorr, responseText, code) {
+                    window.location.reload();
+                }
             });
-            $('#testIpNetwork').modal();
-        }  
-    );
-});
-$('body').delegate('[data-toggle="modal"][data-target="#addNewBanned"]', 'click', function(event) {
-    event.preventDefault();
-    $.get(
-        $(this).attr('href'),
-        function (data) {
-            $('#addNewBanned .modal-body').html($(data).remove('.modal-footer'));
-            if ($(data).find('.modal-footer').length > 0) {
-                $('#addNewBanned').find('.modal-footer').remove();
-                $('#addNewBanned .modal-content').append($(data).find('.modal-footer'));
-            }
-            $('#addNewBanned button[type="submit"]').on('click', function(event) {
-              $('#addNewBanned form').submit();
-            });
-            $('#addNewBanned').modal();
-        }  
-    );
-});
+        }
+    });
+    $('body').delegate('[data-toggle="modal"][data-target="#testIpNetwork"]', 'click', function(event) {
+        event.preventDefault();
+        $.get(
+            $(this).attr('href'),
+            function (data) {
+                $('#testIpNetwork .modal-body').html($(data).remove('.modal-footer'));
+                if ($(data).find('.modal-footer').length > 0) {
+                    $('#testIpNetwork').find('.modal-footer').remove();
+                    $('#testIpNetwork .modal-content').append($(data).find('.modal-footer'));
+                }
+                $('#testIpNetwork button[type="submit"]').on('click', function(event) {
+                  $('#testIpNetwork form').submit();
+                });
+                $('#testIpNetwork').modal();
+            }  
+        );
+    });
+    $('body').delegate('[data-toggle="modal"][data-target="#addNewBanned"]', 'click', function(event) {
+        event.preventDefault();
+        $.get(
+            $(this).attr('href'),
+            function (data) {
+                $('#addNewBanned .modal-body').html($(data).remove('.modal-footer'));
+                if ($(data).find('.modal-footer').length > 0) {
+                    $('#addNewBanned').find('.modal-footer').remove();
+                    $('#addNewBanned .modal-content').append($(data).find('.modal-footer'));
+                }
+                $('#addNewBanned button[type="submit"]').on('click', function(event) {
+                  $('#addNewBanned form').submit();
+                });
+                $('#addNewBanned').modal();
+            }  
+        );
+    });
 JS
 ); ?>
 
 <?php Modal::begin([
     'id' => 'testIpNetwork',
-    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Test IP or network').'</h4>',
+    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Test IP').'</h4>',
     'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">'.Yii::t('app/modules/guard', 'Close').'</a>',
     'clientOptions' => [
         'show' => false

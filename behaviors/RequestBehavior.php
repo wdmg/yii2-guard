@@ -58,6 +58,11 @@ class RequestBehavior extends Behavior
 
         if ($this->module->useFilters) {
 
+            if (!$this->module->isBackend()) {
+                $errorHandler = Yii::$app->getErrorHandler();
+                $errorHandler->errorAction = $this->module->routePrefix . '/guard/default/error';
+            }
+
             if ($this->module->filters['xss'] && isset($this->module->patterns['xss'])) {
                 if ($this->security->checkAttack($this->module->patterns, 'xss', $post)) {
                     $this->security->setBlock('xss');
