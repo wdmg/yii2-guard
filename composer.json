@@ -75,7 +75,36 @@
       "attemptsDuration": 3600,
       "releaseTime": 3600,
       "useIpRange": true,
-      "forbiddenLayout": "@wdmg/guard/views/layouts/default"
+      "forbiddenLayout": "@wdmg/guard/views/layouts/default",
+      "useFileSystemScan": true,
+      "fileSystemScan": {
+        "scanInterval": 21600,
+        "autoClear": true,
+        "onlyTypes": [
+          "*.php",
+          "*.js",
+          "*.htm",
+          "*.html",
+          "*.css",
+          "*.png",
+          "*.jpg",
+          "*.jpeg"
+        ],
+        "exceptTypes": [],
+        "excludesPath": [
+          "@runtime",
+          "@tests",
+          "@runtime/cache",
+          "@webroot/assets"
+        ]
+      },
+      "scanReport": {
+        "emailViewPath": {
+          "html": "@wdmg/guard/mail/report-html",
+          "text": "@wdmg/guard/mail/report-text"
+        },
+        "reportEmail": "admin@example.com"
+      }
     }
   }
 }

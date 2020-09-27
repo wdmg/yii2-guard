@@ -19,7 +19,8 @@ use wdmg\base\BaseModule;
 use wdmg\guard\filters\RateLimit;
 use wdmg\guard\behaviors\RequestBehavior;
 use wdmg\guard\models\Security;
-use yii\helpers\ArrayHelper;
+use wdmg\guard\models\Scanning;
+use wdmg\helpers\ArrayHelper;
 
 /**
  * Guard module definition class
@@ -172,6 +173,50 @@ class Module extends BaseModule
     public $forbiddenLayout = "@wdmg/guard/views/layouts/default";
 
     /**
+     * @var bool
+     */
+    public $useFileSystemScan = true;
+
+    /**
+     * @var array
+     */
+    public $fileSystemScan = [
+        'scanInterval' => 21600, // 6 hours
+        'autoClear' => true,
+        'onlyTypes' => [
+            "*.php",
+            "*.js",
+            "*.htm",
+            "*.html",
+            "*.css",
+            "*.scss",
+            "*.less",
+            "*.json",
+            "*.png",
+            "*.jpg",
+            "*.jpeg"
+        ],
+        'exceptTypes' => [],
+        'excludesPath' => [
+            "@runtime",
+            "@tests",
+            "@runtime/cache",
+            "@webroot/assets"
+        ]
+    ];
+
+    /**
+     * @var array
+     */
+    public $scanReport = [
+        'emailViewPath' => [
+            'html' => "@wdmg/guard/mail/report-html",
+            'text' => "@wdmg/guard/mail/report-text"
+        ],
+        'reportEmail' => "admin@example.com"
+    ];
+
+    /**
      * {@inheritdoc}
      */
     public function init()
@@ -223,6 +268,12 @@ class Module extends BaseModule
 
         if (isset(Yii::$app->params['guard.overdriveLimit']))
             $this->overdriveLimit = Yii::$app->params['guard.overdriveLimit'];
+
+        if (isset(Yii::$app->params['guard.useFileSystemScan']))
+            $this->useFileSystemScan = Yii::$app->params['guard.useFileSystemScan'];
+
+        if (isset(Yii::$app->params['guard.fileSystemScan']))
+            $this->fileSystemScan = Yii::$app->params['guard.fileSystemScan'];
 
     }
 
@@ -308,6 +359,20 @@ class Module extends BaseModule
                                 }
                             }
                         }
+                    }
+                });
+            }
+
+            // Filesystem scan of modifications
+            if ($this->useFileSystemScan) {
+                \yii\base\Event::on(\yii\base\Controller::class, \yii\base\Controller::EVENT_AFTER_ACTION, function ($event) {
+                    $scanner = new Scanning();
+                    if ($lastscan = $scanner::find()->orderBy(['id' => SORT_DESC])->one()) {
+                        if (strtotime($lastscan->updated_at) <= strtotime("- " . $this->fileSystemScan['scanInterval'] . ' seconds')) {
+                            $scanner->scan();
+                        }
+                    } else {
+                        $scanner->scan();
                     }
                 });
             }

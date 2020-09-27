@@ -2,11 +2,11 @@
 
 namespace wdmg\guard\models;
 
-use wdmg\helpers\IpAddressHelper;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use wdmg\guard\models\Security;
+use wdmg\helpers\IpAddressHelper;
 
 /**
  * SecuritySearch represents the model behind the search form of `app\vendor\wdmg\guard\models\Security`.

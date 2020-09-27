@@ -2,12 +2,12 @@
 
 namespace wdmg\guard\models;
 
-use wdmg\helpers\IpAddressHelper;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use wdmg\guard\models\Security;
 use wdmg\helpers\ArrayHelper;
+use wdmg\helpers\IpAddressHelper;
 
 /**
  * BannedForm represents the model `app\vendor\wdmg\guard\models\Security`.

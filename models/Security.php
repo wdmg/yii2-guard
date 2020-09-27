@@ -5,8 +5,8 @@ namespace wdmg\guard\models;
 use Yii;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
-use yii\helpers\ArrayHelper;
 use wdmg\helpers\IpAddressHelper;
+use wdmg\helpers\ArrayHelper;
 use yii\web\HttpException;
 use yii\web\Request;
 
@@ -123,7 +123,7 @@ class Security extends \yii\db\ActiveRecord
      */
     public function attributeLabels()
     {
-        $rules = [
+        return [
             'id' => Yii::t('app/modules/guard', 'ID'),
             'client_ip' => Yii::t('app/modules/guard', 'Client IP'),
             'client_net' => Yii::t('app/modules/guard', 'Client Net'),
@@ -138,12 +138,6 @@ class Security extends \yii\db\ActiveRecord
             'updated_by' => Yii::t('app/modules/guard', 'Updated by'),
             'release_at' => Yii::t('app/modules/guard', 'Release'),
         ];
-
-        if (class_exists('\wdmg\users\models\Users') && (Yii::$app->hasModule('admin/users') || Yii::$app->hasModule('users'))) {
-            $rules[] = [['created_by', 'updated_by'], 'safe'];
-        }
-
-        return ArrayHelper::merge(parent::rules(), $rules);
     }
 
     /**
