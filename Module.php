@@ -181,20 +181,11 @@ class Module extends BaseModule
      * @var array
      */
     public $fileSystemScan = [
-        'scanInterval' => 21600, // 6 hours
+        'scanInterval' => 360, // 6 hours
         'autoClear' => true,
         'onlyTypes' => [
             "*.php",
-            "*.js",
-            "*.htm",
-            "*.html",
-            "*.css",
-            "*.scss",
-            "*.less",
-            "*.json",
-            "*.png",
-            "*.jpg",
-            "*.jpeg"
+            "*.js"
         ],
         'exceptTypes' => [],
         'excludesPath' => [
@@ -304,12 +295,6 @@ class Module extends BaseModule
     public function bootstrap($app)
     {
         parent::bootstrap($app);
-
-        /*if (!$this->module->isBackend()) {
-            $app->getUrlManager()->addRules([
-                '/guard/default/error' => 'admin/guard/default/error'
-            ], true);
-        }*/
 
         // Add guard behaviors for web app
         if (!($app instanceof \yii\console\Application) && $this->module) {

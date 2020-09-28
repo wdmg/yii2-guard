@@ -2,6 +2,7 @@ Changelog
 =========
 
 ## 1.1.*
+ * Translations and log activity
  * Added filesystem scan functionality
  
 ## 1.1.0 (2020-09-18)

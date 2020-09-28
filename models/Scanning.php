@@ -112,11 +112,13 @@ class Scanning extends \yii\db\ActiveRecord
     {
         parent::afterSave($insert, $changedAttributes);
         if ($insert && $this->_module->fileSystemScan["autoClear"]) {
-            $this->clearOld();
+            $this->clearOldReports();
         }
     }
 
     /**
+     * Scans the file system for file modifications
+     *
      * @return array|null
      */
     public function scan()
@@ -146,39 +148,39 @@ class Scanning extends \yii\db\ActiveRecord
 
         $runtime = [];
         $time_start = microtime(true);
-        $runtime['log'][time()] = Yii::t('app/modules/guard', 'Start scanning...');
+        $runtime['log'][time()] = Yii::t('app/modules/guard', 'Scanning started...');
 
-        // Точка входа
+        // Point of entry
         $path = Yii::getAlias('@app');
         $directories = FileHelper::findDirectories($path, ['recursive' => true]);
 
-        // Список игнорирования при сканировании
+        // Ignore list when scanning
         $ignored = [];
         foreach ($excludes as $exclude) {
             if (preg_match("/^@(.*)$/", $exclude)) {
                 try {
                     $ignored[] = Yii::getAlias($exclude);
                 } catch (\yii\base\InvalidArgumentException $e) {
-                    $runtime['log'][time()] = Yii::t('app/modules/guard', 'Exclude alias not found: {alias}', [
+                    $runtime['log'][time()] = Yii::t('app/modules/guard', 'Excluded alias `{alias}` not found', [
                         'alias' => $exclude
                     ]);
                 }
             } elseif (is_dir($exclude)) {
                 $ignored[] = $exclude;
             } else {
-                $runtime['log'][time()] = Yii::t('app/modules/guard', 'Exclude path is not a directory: {path}', [
+                $runtime['log'][time()] = Yii::t('app/modules/guard', 'Excluded path `{path}` is not a directory', [
                     'path' => $exclude
                 ]);
             }
         }
 
-        // Сканирование файлов и директорий
+        // Scan files and directories
         $scanned = [];
         $dirs_count = 0;
         $files_count = 0;
         foreach ($directories as $key => $directory) {
             if (in_array($directory, $ignored)) {
-                $runtime['log'][time()] = Yii::t('app/modules/guard', 'Excluded path will be ignored: {path}', [
+                $runtime['log'][time()] = Yii::t('app/modules/guard', 'Excluded path `{path}` will be ignored', [
                     'path' => $directory
                 ]);
                 unset($directories[$key]);
@@ -217,14 +219,15 @@ class Scanning extends \yii\db\ActiveRecord
             }
         }
 
-        // Сканирование завершено
+        // Scan completed
         if (!empty($scanned)) {
             $time = (microtime(true) - $time_start);
 
             $runtime['summary'] = [
                 'dirs' => $dirs_count,
                 'files' => $files_count,
-                'time' => $time
+                'time' => $time,
+                'timestamp' => time(),
             ];
 
             $runtime['log'][time()] = Yii::t('app/modules/guard', 'Scanning {dirs} dirs and {files} files completed in {time} sec.', [
@@ -233,23 +236,45 @@ class Scanning extends \yii\db\ActiveRecord
                 'time' => round($time, 2)
             ]);
 
-            // Проверка на модификации и отправка отчёта
-            if ($differences = $this->compare($scanned)) {
-                $runtime['log'][time()] = Yii::t('app/modules/guard', 'Changes detected. {count} files have been modified since the last scan.', [
-                    'count' => count($differences),
-                ]);
-                $this->sendReport($differences);
+            // Check for modifications and send a report
+            if ($differences = $this->compareReports($scanned)) {
+                if ($count = count($differences)) {
+
+                    $runtime['log'][time()] = Yii::t('app/modules/guard', 'Changes detected! {count} files have been modified since the last scan.', [
+                        'count' => $count,
+                    ]);
+
+                    $this->_module->logActivity(
+                        "Changes detected! $count files have been modified since the last scan.",
+                        null,
+                        'danger',
+                        1
+                    );
+
+                    $this->sendReport($differences, $runtime['summary']);
+                } else {
+                    $this->sendReport([], $runtime['summary']);
+                }
             }
 
-            // Сохранение текущего сканирования
+            // Save the current scan
             if (!empty($scanned) && !empty($runtime)) {
                 $this->data = $scanned;
                 $this->logs = $runtime;
-
                 if ($this->save(true)) {
-                    // Activity
+                    $this->_module->logActivity(
+                        'Scan report has been saved successfully.',
+                        null,
+                        'success',
+                        1
+                    );
                 } else {
-                    // Activity
+                    $this->_module->logActivity(
+                        'An error occurred while save the scan report.',
+                        null,
+                        'warning',
+                        1
+                    );
                 }
             }
 
@@ -260,10 +285,12 @@ class Scanning extends \yii\db\ActiveRecord
     }
 
     /**
+     * Compares the scan result with the previous scan
+     *
      * @param $data
      * @return array|null
      */
-    private function compare($data)
+    private function compareReports($data)
     {
         if ($lastscan = self::find()->orderBy(['id' => SORT_DESC])->one()) {
             if ($results = ArrayHelper::diff($data, ((is_array($lastscan->data)) ? $lastscan->data : unserialize($lastscan->data)))) {
@@ -275,6 +302,8 @@ class Scanning extends \yii\db\ActiveRecord
     }
 
     /**
+     * Builds a list of files that have been added or modified
+     *
      * @param $data
      * @return array
      */
@@ -284,22 +313,27 @@ class Scanning extends \yii\db\ActiveRecord
         if (!$root = Yii::getAlias('@app'))
             $root = dir(__DIR__);
 
-        foreach ($data as $paths) {
-            foreach ($paths as $file => $details) {
-                $report[] = [
-                    'filename' => FileHelper::safetyPath($file, $root),
-                    'modified' => date("F d Y H:i:s", $details[0]['lastmod']),
-                ];
+        if (is_countable($data)) {
+            foreach ($data as $paths) {
+                foreach ($paths as $file => $details) {
+                    $report[] = [
+                        'filename' => FileHelper::safetyPath($file, $root),
+                        'modified' => date("F d Y H:i:s", $details[0]['lastmod']),
+                    ];
+                }
             }
         }
+
         return $report;
     }
 
     /**
+     * Sends a scan report to the email address
+     *
      * @param $data
      * @return bool
      */
-    private function sendReport($data)
+    private function sendReport($data, $runtime)
     {
         // Get report email adress
         $reportEmail = $this->_module->scanReport["reportEmail"];
@@ -311,22 +345,29 @@ class Scanning extends \yii\db\ActiveRecord
                 'html' => $this->_module->scanReport["emailViewPath"]["html"],
                 'text' => $this->_module->scanReport["emailViewPath"]["text"]
             ], [
-                'files' => $this->buildReport($data)
-            ])->setTo($reportEmail)
-                ->setSubject(Yii::t('app/modules/guard', 'Scan report for {appname}', [
-                    'appname' => Yii::$app->name,
-                ]))
-                ->send();
+                'files' => $this->buildReport($data),
+                'details' => $runtime
+            ])->setTo($reportEmail)->setSubject(Yii::t('app/modules/guard', 'Scan report for {appname}', [
+                'appname' => Yii::$app->name,
+            ]))->send();
         } else {
-            // Activity
+            $this->_module->logActivity(
+                'An error occurred while send the scan report.',
+                null,
+                'warning',
+                1
+            );
         }
+
         return false;
     }
 
     /**
+     * Cleans up data from previous crawls to save database resources
+     *
      * @return int
      */
-    private function clearOld()
+    private function clearOldReports()
     {
         return self::updateAll(
             ['data' => null],

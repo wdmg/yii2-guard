@@ -102,6 +102,20 @@ return [
     'SQL-injection detected.' => "Обнаружена попытка SQL-инъекции.",
     'Access denied from security reason.' => "В доступе отказано по соображениям безопасности.",
 
+    'Scanning started...' => "Начато сканирование...",
+    'Excluded alias `{alias}` not found' => "Исключенный псевдоним `{alias}` не найден",
+    'Excluded path `{path}` is not a directory' => "Исключенный путь `{path}` не является каталогом",
+    'Excluded path `{path}` will be ignored' => "Исключенный путь `{path}` будет проигнорирован",
+    'Scanned `{file}`, md5 hash: {hash}, last modification time of the file: {lastmod}' => "Проверен `{file}`, md5 хеш: {hash}, время последнего изменения файла: {lastmod}",
+    'Scanning {dirs} dirs and {files} files completed in {time} sec.' => "Сканирование каталогов {dirs} и файлов {files} завершено за {time} сек.",
+    'Changes detected! {count} files have been modified since the last scan.' => "Обнаружены изменения! {count} файлов были изменены с момента последнего сканирования.",
+    'There are no changes to tracked files.' => "Нет изменений в отслеживаемых файлах.",
+
+    'Scan report for {appname}' => "Отчет о сканировании для {appname}",
+    'Total scan result from {datetime}' => "Суммарный результат сканирования от {datetime}",
+    'The following files have been added/changed:' => "Следующие файлы были добавлены/изменены:",
+    'File `{filename}` has been modified at {modified}' => "Файл `{filename}` был модифицирован {modified}",
+
 ];
 
 ?>

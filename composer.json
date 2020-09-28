@@ -82,13 +82,7 @@
         "autoClear": true,
         "onlyTypes": [
           "*.php",
-          "*.js",
-          "*.htm",
-          "*.html",
-          "*.css",
-          "*.png",
-          "*.jpg",
-          "*.jpeg"
+          "*.js"
         ],
         "exceptTypes": [],
         "excludesPath": [
