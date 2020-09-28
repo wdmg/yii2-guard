@@ -246,7 +246,7 @@ class Scanning extends \yii\db\ActiveRecord
 
                     $this->_module->logActivity(
                         "Changes detected! $count files have been modified since the last scan.",
-                        null,
+                        __METHOD__,
                         'danger',
                         1
                     );
@@ -264,14 +264,14 @@ class Scanning extends \yii\db\ActiveRecord
                 if ($this->save(true)) {
                     $this->_module->logActivity(
                         'Scan report has been saved successfully.',
-                        null,
+                        __METHOD__,
                         'success',
                         1
                     );
                 } else {
                     $this->_module->logActivity(
                         'An error occurred while save the scan report.',
-                        null,
+                        __METHOD__,
                         'warning',
                         1
                     );
@@ -353,7 +353,7 @@ class Scanning extends \yii\db\ActiveRecord
         } else {
             $this->_module->logActivity(
                 'An error occurred while send the scan report.',
-                null,
+                __METHOD__,
                 'warning',
                 1
             );

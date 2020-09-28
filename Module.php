@@ -181,7 +181,7 @@ class Module extends BaseModule
      * @var array, file system scan options
      */
     public $fileSystemScan = [
-        'scanInterval' => 21600, // 6 hours
+        'scanInterval' => 120, // seconds, null|false - for disable auto scan
         'autoClear' => true,
         'onlyTypes' => [
             "*.php",
@@ -351,13 +351,15 @@ class Module extends BaseModule
             // Filesystem scan of modifications
             if ($this->useFileSystemScan) {
                 \yii\base\Event::on(\yii\base\Controller::class, \yii\base\Controller::EVENT_AFTER_ACTION, function ($event) {
-                    $scanner = new Scanning();
-                    if ($lastscan = $scanner::find()->orderBy(['id' => SORT_DESC])->one()) {
-                        if (strtotime($lastscan->updated_at) <= strtotime("- " . $this->fileSystemScan['scanInterval'] . ' seconds')) {
+                    if ($this->fileSystemScan['scanInterval']) {
+                        $scanner = new Scanning();
+                        if ($lastscan = $scanner::find()->orderBy(['id' => SORT_DESC])->one()) {
+                            if (strtotime($lastscan->updated_at) <= strtotime("- " . intval($this->fileSystemScan['scanInterval']) . ' seconds')) {
+                                $scanner->scan();
+                            }
+                        } else {
                             $scanner->scan();
                         }
-                    } else {
-                        $scanner->scan();
                     }
                 });
             }
