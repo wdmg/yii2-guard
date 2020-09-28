@@ -173,15 +173,15 @@ class Module extends BaseModule
     public $forbiddenLayout = "@wdmg/guard/views/layouts/default";
 
     /**
-     * @var bool
+     * @var bool, use a file system scan for modification
      */
     public $useFileSystemScan = true;
 
     /**
-     * @var array
+     * @var array, file system scan options
      */
     public $fileSystemScan = [
-        'scanInterval' => 360, // 6 hours
+        'scanInterval' => 21600, // 6 hours
         'autoClear' => true,
         'onlyTypes' => [
             "*.php",
@@ -197,7 +197,7 @@ class Module extends BaseModule
     ];
 
     /**
-     * @var array
+     * @var array, options for sending scan notifications by email
      */
     public $scanReport = [
         'emailViewPath' => [

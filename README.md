@@ -33,18 +33,18 @@ To add a module to the project, add the following data in your configuration fil
             'class' => 'wdmg\guard\Module',
             'routePrefix' => 'admin'
             'useFilters': true, // flag for use filters
-            'filters': { // flag for use request filters
+            'filters': [ // flag for use request filters
                 'xss': true,
                 'lfi': true,
                 'php': true,
                 'sql': true
-            },
-            'patterns': { // security filters (regexp patterns)
+            ],
+            'patterns': [ // security filters (regexp patterns)
                 'xss': '/(<.*?(script|body|object|iframe|applet|meta|style|form|frameset|frame|svg).*?>)|(base64|data\\:|fromCharCode|expression|onmouse|onload|alert|getcookie|document\\.)/uim',
                 'lfi': '/((\\.|%2e){2,}(\\/|%5c|\\\\)|php:\\/\\/|file:\\/\\/|expect:\\/\\/|zip:\\/\\/|yii\\.php|init\\.php|web\\.php|params\\.php|db\\.php|console\\.php|test\\.php|test_db\\.php|phpinfo|passwd|htaccess)/uism',
                 'php': '/(php:\\/\\/|(eval|preg_replace|require|include|call_user|create_func|array_filter|array_reduce|array_walk|array_map|reflection)\\()/uism',
                 'sql': '/(UNION|SELECT|OUTFILE|ALTER|INSERT|DROP|TRUNCATE|({%tables}))\\s/uism'
-            },
+            ],
             'useRateLimit': true, // flag for use requests limitation
             'rateLimit': 60, // request limit`s per minute
             'rateLimitIgnoringIP': [ // ignoring by IP
@@ -65,15 +65,38 @@ To add a module to the project, add the following data in your configuration fil
             ],
             'rateLimitErrorMessage': 'Your request limit has been exceeded! Try later.', // request limit error message
             'useOverdriveLimit': true, // flag for use overdrive limitation
-            'overdriveLimit': { // limit for $_POST and $_GET data overdrive
+            'overdriveLimit': [ // limit for $_POST and $_GET data overdrive
                 'post': 200,
                 'get': 100
-            },
+            ],
             'maxAttempts': 5, // maximum number of attack attempts before blocking
             'attemptsDuration': 3600, // time in seconds of storage the history of attempted attacks in the cache
             'releaseTime': 3600, // time in seconds of removal restrictions (time of blocking)
             'useIpRange': true, // use blocking also by a range of network IP addresses
             'forbiddenLayout': "@wdmg/guard/views/layouts/default" // use forbidden error layout for frontend
+            'useFileSystemScan': true, // use a file system scan for modification
+            'fileSystemScan': [ // file system scan options
+                'scanInterval': 21600,
+                'autoClear': true,
+                'onlyTypes': [
+                    '*.php',
+                    '*.js'
+                ],
+                'exceptTypes': [],
+                'excludesPath': [
+                    '@runtime',
+                    '@tests',
+                    '@runtime/cache',
+                    '@webroot/assets'
+                ]
+            ],
+            'scanReport': [ // options for sending scan notifications by email
+                'emailViewPath': [
+                    'html': '@wdmg/guard/mail/report-html',
+                    'text': '@wdmg/guard/mail/report-text'
+                ],
+                'reportEmail': 'admin@example.com'
+            ]
         ],
         ...
     ],
