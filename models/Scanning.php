@@ -239,7 +239,8 @@ class Scanning extends \yii\db\ActiveRecord
             $runtime['log'][time()] = Yii::t('app/modules/guard', 'Scanning {dirs} dirs and {files} files completed in {time} sec.', [
                 'dirs' => $dirs_count,
                 'files' => $files_count,
-                'time' => round($time, 2)
+                'time' => round($time, 2),
+                'modified' => null
             ]);
 
             // Check for modifications and send a report
@@ -249,6 +250,8 @@ class Scanning extends \yii\db\ActiveRecord
                     $runtime['log'][time()] = Yii::t('app/modules/guard', 'Changes detected! {count} files have been modified since the last scan.', [
                         'count' => $count,
                     ]);
+
+                    $runtime['summary']['modified'] = $count;
 
                     $this->_module->logActivity(
                         "Changes detected! $count files have been modified since the last scan.",

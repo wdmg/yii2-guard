@@ -2,6 +2,7 @@ Changelog
 =========
 
 ## 1.1.*
+ * Added console commands
  * Translations and log activity
  * Added filesystem scan functionality
  

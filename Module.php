@@ -173,7 +173,7 @@ class Module extends BaseModule
     public $forbiddenLayout = "@wdmg/guard/views/layouts/default";
 
     /**
-     * @var bool, use a file system scan for modification
+     * @var bool, use a filesystem scan for modification
      */
     public $useFileSystemScan = true;
 
