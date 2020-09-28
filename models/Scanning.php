@@ -6,6 +6,7 @@ use Yii;
 use yii\behaviors\TimestampBehavior;
 use wdmg\helpers\ArrayHelper;
 use wdmg\helpers\FileHelper;
+use wdmg\validators\SerialValidator;
 
 class Scanning extends \yii\db\ActiveRecord
 {
@@ -98,11 +99,16 @@ class Scanning extends \yii\db\ActiveRecord
     {
         parent::afterFind();
 
-        if (is_string($this->data))
+        $validator = new SerialValidator();
+        if (is_string($this->data) && $validator->isValid($this->data))
             $this->data = unserialize($this->data);
+        else
+            $this->data = [];
 
-        if (is_string($this->logs))
+        if (is_string($this->logs) && $validator->isValid($this->logs))
             $this->logs = unserialize($this->logs);
+        else
+            $this->logs = [];
     }
 
     /**
