@@ -181,7 +181,7 @@ class Module extends BaseModule
      * @var array, file system scan options
      */
     public $fileSystemScan = [
-        'scanInterval' => 120, // seconds, null|false - for disable auto scan
+        'scanInterval' => 21600, // seconds, null|false - for disable auto scan
         'autoClear' => true,
         'onlyTypes' => [
             "*.php",
