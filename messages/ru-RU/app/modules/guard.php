@@ -102,6 +102,9 @@ return [
     'SQL-injection detected.' => "Обнаружена попытка SQL-инъекции.",
     'Access denied from security reason.' => "В доступе отказано по соображениям безопасности.",
 
+    'Scan Report' => "Отчёт сканирования",
+    'Scan Reports' => "Отчёты сканирования",
+
     'Scanning started...' => "Начато сканирование...",
     'Excluded alias `{alias}` not found' => "Исключенный псевдоним `{alias}` не найден",
     'Excluded path `{path}` is not a directory' => "Исключенный путь `{path}` не является каталогом",

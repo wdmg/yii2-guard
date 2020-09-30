@@ -182,7 +182,7 @@ class Module extends BaseModule
      */
     public $fileSystemScan = [
         'scanInterval' => 21600, // seconds, null|false - for disable auto scan
-        'autoClear' => true,
+        'autoClear' => true, // deletes reports oldest a week
         'onlyTypes' => [
             "*.php",
             "*.js"
@@ -284,6 +284,11 @@ class Module extends BaseModule
                     'url' => [$this->routePrefix . '/guard/banned/'],
                     'icon' => 'fa fa-fw fa-traffic-light',
                     'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'banned'),
+                ], [
+                    'label' => Yii::t('app/modules/guard', 'Scan Reports'),
+                    'url' => [$this->routePrefix . '/guard/scan/'],
+                    'icon' => 'fa fa-fw fa-history',
+                    'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'scan'),
                 ]
             ]
         ];

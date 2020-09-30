@@ -3,12 +3,13 @@
 namespace wdmg\guard\models;
 
 use Yii;
+use wdmg\base\models\ActiveRecord;
 use yii\behaviors\TimestampBehavior;
 use wdmg\helpers\ArrayHelper;
 use wdmg\helpers\FileHelper;
 use wdmg\validators\SerialValidator;
 
-class Scanning extends \yii\db\ActiveRecord
+class Scanning extends ActiveRecord
 {
 
     private $_module;
@@ -234,13 +235,13 @@ class Scanning extends \yii\db\ActiveRecord
                 'files' => $files_count,
                 'time' => $time,
                 'timestamp' => time(),
+                'modified' => null
             ];
 
             $runtime['log'][time()] = Yii::t('app/modules/guard', 'Scanning {dirs} dirs and {files} files completed in {time} sec.', [
                 'dirs' => $dirs_count,
                 'files' => $files_count,
-                'time' => round($time, 2),
-                'modified' => null
+                'time' => round($time, 2)
             ]);
 
             // Check for modifications and send a report
@@ -296,12 +297,18 @@ class Scanning extends \yii\db\ActiveRecord
     /**
      * Compares the scan result with the previous scan
      *
-     * @param $data
+     * @param $data, current scan data
+     * @param null $id, target report `id`
      * @return array|null
      */
-    private function compareReports($data)
+    public function compareReports($data, $id = null)
     {
-        if ($lastscan = self::find()->orderBy(['id' => SORT_DESC])->one()) {
+        if ($id)
+            $lastscan = self::find()->where(['id' => intval($id)])->limit(1)->one()->getPrev();
+        else
+            $lastscan = self::find()->orderBy(['id' => SORT_DESC])->limit(1)->one();
+
+        if ($lastscan) {
             if ($results = ArrayHelper::diff($data, ((is_array($lastscan->data)) ? $lastscan->data : unserialize($lastscan->data)))) {
                 return $results;
             }
@@ -311,12 +318,36 @@ class Scanning extends \yii\db\ActiveRecord
     }
 
     /**
+     * Сhecks if reports can be compared/available.
+     * Reports data are periodically deleted by age and may be unavailable.
+     *
+     * @param $id
+     * @param null $last_id
+     * @return bool
+     */
+    public function canCompareReports($id, $last_id = null) {
+
+        if (!$last_id)
+            $last_id = $this->getPrev(false, 1);
+
+        $query = self::find()
+            ->where(['id' => intval($id)])
+            ->andWhere(['NOT', ['data' => null]])
+            ->orWhere(['id' => intval($last_id)])
+            ->andWhere(['NOT', ['data' => null]]);
+
+        $count = $query->count();
+        return (intval($count) == 2) ? true : false;
+    }
+
+    /**
      * Builds a list of files that have been added or modified
      *
      * @param $data
+     * @param bool $safe
      * @return array
      */
-    private function buildReport($data) {
+    public function buildReport($data, $safe = true) {
         $report = [];
 
         if (!$root = Yii::getAlias('@app'))
@@ -326,7 +357,7 @@ class Scanning extends \yii\db\ActiveRecord
             foreach ($data as $paths) {
                 foreach ($paths as $file => $details) {
                     $report[] = [
-                        'filename' => FileHelper::safetyPath($file, $root),
+                        'filename' => (($safe) ? FileHelper::safetyPath($file, $root) : $file),
                         'modified' => date("F d Y H:i:s", $details[0]['lastmod']),
                     ];
                 }
@@ -378,9 +409,17 @@ class Scanning extends \yii\db\ActiveRecord
      */
     private function clearOldReports()
     {
-        return self::updateAll(
+        /*return self::updateAll(
             ['data' => null],
             ['AND', ['<=', 'id', intval($this->id) - 3], ['!=', 'id', $this->id]]
+        );*/
+        /*return self::updateAll(
+            ['data' => null],
+            ['AND', ['>', 'updated_at', new Expression('DATE_SUB(NOW(), INTERVAL 1 WEEK)')], ['!=', 'id', $this->id]]
+        );*/
+        return self::updateAll(
+            ['data' => null],
+            ['AND', ['<', 'updated_at', date("Y-m-d H:i:s", strtotime('-1 week'))], ['!=', 'id', $this->id]]
         );
     }
 }

@@ -4,13 +4,14 @@ namespace wdmg\guard\controllers;
 
 use Yii;
 use wdmg\guard\models\Scanning;
+use wdmg\guard\models\ScanningSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 
 /**
- * ScanController implements the CRUD actions for Scanning model.
+ * ScanController implements the CRUD actions for Scanning report.
  */
 class ScanController extends Controller
 {
@@ -55,7 +56,7 @@ class ScanController extends Controller
 
 
     /**
-     * Lists all Scanning models.
+     * Lists all Scanning reports.
      * @return mixed
      */
     public function actionIndex()
@@ -72,7 +73,7 @@ class ScanController extends Controller
     }
 
     /**
-     * Displays a single Scanning model.
+     * Displays a single Scanning report.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
@@ -90,20 +91,28 @@ class ScanController extends Controller
     }
 
     /**
-     * Displays a single Scanning model.
+     * Displays a single Scanning report.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
      */
     public function actionView($id)
     {
-        return $this->render('view', [
-            'model' => $this->findModel($id),
-        ]);
+        if (Yii::$app->request->isAjax) {
+            $model = $this->findModel($id);
+            if ($data = $model->compareReports($model->data, $id)) {
+                $report = $model->buildReport($data, false);
+                return $this->renderAjax('_view', [
+                    'model' => $model,
+                    'files' => $report,
+                ]);
+            }
+        }
+        return $this->redirect(['index']);
     }
 
     /**
-     * Deletes an existing Scanning model.
+     * Deletes an existing Scanning report.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -117,7 +126,7 @@ class ScanController extends Controller
     }
 
     /**
-     * Finds the Scanning model based on its primary key value.
+     * Finds the Scanning report based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
      * @return Scanning the loaded model
