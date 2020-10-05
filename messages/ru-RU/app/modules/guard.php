@@ -2,7 +2,7 @@
 
 return [
 
-    'It seems that you have not changed your access password for a long time. We recommend that you, periodically, change the password for access to the administrative interface of the site.' => "Похоже, что Вы давно не меняли пароль доступа. Рекомендуем переодически менять пароль доступа к административному интерфейсу сайта.",
+    'It seems that you have not changed your access password for a long time. We recommend that you, periodically, change the password for access to the administrative interface of the site.' => "Похоже, что Вы давно не меняли пароль доступа. Рекомендуем периодически менять пароль доступа к административному интерфейсу сайта.",
 
     'Security' => "Безопасность",
     'Banned List' => "Список блокировок",
@@ -54,6 +54,9 @@ return [
     'Apply' => "Применить",
     'Go' => "Начать",
 
+    'Summary' => "Детали",
+    'Result' => "Результат",
+
     'Blocking period' => "Срок блокировки",
     'Default' => "По-умолчанию",
     '1 hour' => "1 час",
@@ -102,6 +105,9 @@ return [
     'SQL-injection detected.' => "Обнаружена попытка SQL-инъекции.",
     'Access denied from security reason.' => "В доступе отказано по соображениям безопасности.",
 
+    'Clear Up' => "Очистка данных",
+    'Run Scan' => "Запуск сканирования",
+    'Delete all reports' => "Удалить все отчёты",
     'Scan Report' => "Отчёт сканирования",
     'Scan Reports' => "Отчёты сканирования",
 

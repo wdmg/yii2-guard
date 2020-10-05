@@ -4,7 +4,7 @@
 ![Progress](https://img.shields.io/badge/progress-ready_to_use-green.svg)
 [![GitHub license](https://img.shields.io/github/license/wdmg/yii2-guard.svg)](https://github.com/wdmg/yii2-guard/blob/master/LICENSE)
 
-<img src="./docs/images/yii2-guard.png" width="100%" alt="Yii2 Composite Forms" />
+<img src="./docs/images/yii2-guard.png" width="100%" alt="Security system for Yii2" />
 
 # Yii2 Guard
 Security system for Yii2. The extension is able to detect and repel Overdrive attack, XSS attack, LFI / RFI / RCE attack, PHP / SQL injection attacks, and block by over rate limit.
@@ -117,7 +117,8 @@ Use the `Module::dashboardNavItems()` method of the module to generate a navigat
     ?>
 
 # Status and version [ready to use]
-* v.1.1.0 - Up to date dependencies
+* v.1.2.0 - Filesystem scan reports
+* v.1.1.0 - Added blocking by IP functionality
 * v.1.0.2 - Up to date dependencies
 * v.1.0.1 - Fixed deprecated class declaration
 * v.1.0.0 - Added base module and model, behaviors and filters

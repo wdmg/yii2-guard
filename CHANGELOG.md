@@ -1,7 +1,9 @@
 Changelog
 =========
 
-## 1.1.*
+## 1.2.0 (2020-10-06)
+ * Scan Reports process
+ * Scan Reports view
  * Added console commands
  * Translations and log activity
  * Added filesystem scan functionality

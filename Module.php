@@ -6,7 +6,7 @@ namespace wdmg\guard;
  * Yii2 Guard
  *
  * @category        Module
- * @version         1.1.0
+ * @version         1.2.0
  * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
  * @link            https://github.com/wdmg/yii2-guard
  * @copyright       Copyright (c) 2019 - 2020 W.D.M.Group, Ukraine
@@ -50,7 +50,7 @@ class Module extends BaseModule
     /**
      * @var string the module version
      */
-    private $version = "1.1.0";
+    private $version = "1.2.0";
 
     /**
      * @var integer, priority of initialization
@@ -181,7 +181,7 @@ class Module extends BaseModule
      * @var array, file system scan options
      */
     public $fileSystemScan = [
-        'scanInterval' => 21600, // seconds, null|false - for disable auto scan
+        'scanInterval' => null, // integer seconds, null|false - for disable auto scan
         'autoClear' => true, // deletes reports oldest a week
         'onlyTypes' => [
             "*.php",
@@ -192,7 +192,9 @@ class Module extends BaseModule
             "@runtime",
             "@tests",
             "@runtime/cache",
-            "@webroot/assets"
+            "@webroot/assets",
+            "/node_modules",
+            "/.git"
         ]
     ];
 

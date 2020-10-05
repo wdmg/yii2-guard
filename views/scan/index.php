@@ -24,11 +24,11 @@ $this->params['breadcrumbs'][] = $this->title;
 </div>
 <div class="guard-banned-index">
     <?php Pjax::begin([
-        'id' => "guardBannedAjax",
+        'id' => "guardScannedAjax",
         'timeout' => 5000
     ]); ?>
     <?= GridView::widget([
-        'id' => "guardBannedList",
+        'id' => "guardScannedList",
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'layout' => '{summary}<br\/>{items}<br\/>{summary}<br\/><div class="text-center">{pager}</div>',
@@ -46,12 +46,16 @@ $this->params['breadcrumbs'][] = $this->title;
                     'class' => 'text-center'
                 ],
                 'value' => function($data) {
-                    return Yii::t('app/modules/guard', 'Scanning from {datetime}: {dirs} dirs and {files} files completed in {time} sec.', [
-                        'datetime' => date("F d Y H:i:s", $data->logs['summary']['timestamp']),
-                        'dirs' => $data->logs['summary']['dirs'],
-                        'files' => $data->logs['summary']['files'],
-                        'time' => round(intval($data->logs['summary']['time']), 2),
-                    ]);
+                    if (isset($data->logs['summary'])) {
+                        return Yii::t('app/modules/guard', 'Scanning from {datetime}: {dirs} dirs and {files} files completed in {time} sec.', [
+                            'datetime' => date("F d Y H:i:s", $data->logs['summary']['timestamp']),
+                            'dirs' => $data->logs['summary']['dirs'],
+                            'files' => $data->logs['summary']['files'],
+                            'time' => round(intval($data->logs['summary']['time']), 2),
+                        ]);
+                    } else {
+                        return null;
+                    }
                 }
             ], [
                 'attribute' => 'logs',
@@ -74,10 +78,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     return '<span class="label label-success">' . Yii::t('app/modules/guard','No modified') . '</span>';
                 }
             ],
-
             'created_at',
             'updated_at',
-
             [
                 'class' => 'yii\grid\ActionColumn',
                 'header' => Yii::t('app/modules/guard','Actions'),
@@ -92,8 +94,10 @@ $this->params['breadcrumbs'][] = $this->title;
                     'view' => function($url, $data) {
                         if (isset($data->logs['summary']['modified']) && $data->canCompareReports($data->id)) {
                             return Html::a(Yii::t('app/modules/guard','List of files'), $url, [
-                                'data-toggle' => 'modal',
-                                'data-target' => '#viewReport'
+                                'data' => [
+                                    'toggle' => 'modal',
+                                    'target' => '#viewReport',
+                                ]
                             ]);
                         } else {
                             return '';
@@ -118,22 +122,44 @@ $this->params['breadcrumbs'][] = $this->title;
             'nextPageLabel'  => Yii::t('app/modules/guard', 'Next page &rarr;')
         ],
     ]); ?>
+    <hr/>
+    <div>
+        <div class="btn-group">
+            <?= Html::a(Yii::t('app/modules/guard', 'Clear Up'), ['scan/clear'], [
+                'class' => 'btn btn-warning'
+            ]) ?>
+            <?= Html::a(Yii::t('app/modules/guard', 'Run Scan'), ['scan/scan'], [
+                'class' => 'btn btn-success',
+                'data' => [
+                    'toggle' => 'modal',
+                    'target' => '#scanReport',
+                ]
+            ]) ?>
+        </div>
+        <?= Html::a(Yii::t('app/modules/guard', 'Delete all reports'), ['scan/delete'], [
+            'class' => 'btn btn-delete btn-danger pull-right',
+            'data' => [
+                'method' => 'post',
+            ]
+        ]) ?>
+    </div>
     <?php Pjax::end(); ?>
 </div>
 
 <?php
 $this->registerJs(<<< JS
-    $('body').delegate('[data-toggle="modal"][data-target="#viewReport"]', 'click', function(event) {
+    $('body').delegate('[data-toggle="modal"][data-target]', 'click', function(event) {
         event.preventDefault();
+        var target = $(event.target).data('target');
         $.get(
             $(this).attr('href'),
             function (data) {
-                $('#viewReport .modal-body').html($(data).remove('.modal-footer'));
+                $(target).find('.modal-body').html($(data).remove('.modal-footer'));
                 if ($(data).find('.modal-footer').length > 0) {
-                    $('#viewReport').find('.modal-footer').remove();
-                    $('#viewReport .modal-content').append($(data).find('.modal-footer'));
+                    $(target).find('.modal-footer').remove();
+                    $(target).find('.modal-content').append($(data).find('.modal-footer'));
                 }
-                $('#viewReport').modal();
+                $(target).modal();
             }  
         );
     });
@@ -142,6 +168,16 @@ JS
 
 <?php Modal::begin([
     'id' => 'viewReport',
+    'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'View Report').'</h4>',
+    'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">'.Yii::t('app/modules/guard', 'Close').'</a>',
+    'clientOptions' => [
+        'show' => false
+    ]
+]); ?>
+<?php Modal::end(); ?>
+
+<?php Modal::begin([
+    'id' => 'scanReport',
     'header' => '<h4 class="modal-title">'.Yii::t('app/modules/guard', 'Scan Report').'</h4>',
     'footer' => '<a href="#" class="btn btn-primary" data-dismiss="modal">'.Yii::t('app/modules/guard', 'Close').'</a>',
     'clientOptions' => [

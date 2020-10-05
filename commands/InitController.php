@@ -42,7 +42,9 @@ class InitController extends Controller
         echo "Select the operation you want to perform:\n";
         echo "  1) Apply all module migrations\n";
         echo "  2) Revert all module migrations\n";
-        echo "  3) Scan filesystem for modifications\n\n";
+        echo "  3) Scan filesystem for modifications\n";
+        echo "  4) Clear all filesystem scan reports\n";
+        echo "  5) Delete all filesystem scan reports\n\n";
         echo "Your choice: ";
 
         if(!is_null($this->choice))
@@ -51,10 +53,14 @@ class InitController extends Controller
             $selected = trim(fgets(STDIN));
 
         if ($selected == "1") {
-            Yii::$app->runAction('migrate/up', ['migrationPath' => '@vendor/wdmg/yii2-guard/migrations', 'interactive' => true]);
+
+            Yii:: $app->runAction('migrate/up', ['migrationPath' => '@vendor/wdmg/yii2-guard/migrations', 'interactive' => true]);
+
         } else if($selected == "2") {
+
             Yii::$app->runAction('migrate/down', ['migrationPath' => '@vendor/wdmg/yii2-guard/migrations', 'interactive' => true]);
-        } else if($selected == "3") {
+
+        } else if ($selected == "3") {
 
             echo $this->ansiFormat("\nFilesystem scanning started...\n", Console::FG_YELLOW);
 
@@ -76,6 +82,22 @@ class InitController extends Controller
             } else {
                 echo $this->ansiFormat("Error filesystem scanning.\n", Console::FG_RED);
             }
+
+        } else if ($selected == "4") {
+
+            $scanner = new Scanning();
+            if ($scanner->clearOldReports(true))
+                echo $this->ansiFormat("Filesystem scan reports cleared succesfull!\n", Console::FG_GREEN);
+            else
+                echo $this->ansiFormat("Error clearing filesystem scanning reports.\n", Console::FG_RED);
+
+        } else if ($selected == "5") {
+
+            $scanner = new Scanning();
+            if ($scanner->deleteAll())
+                echo $this->ansiFormat("Filesystem scan reports deleted succesfull!\n", Console::FG_GREEN);
+            else
+                echo $this->ansiFormat("Error deleting filesystem scanning reports.\n", Console::FG_RED);
 
         } else {
             echo $this->ansiFormat("Error! Your selection has not been recognized.\n\n", Console::FG_RED);

@@ -157,6 +157,16 @@ class Scanning extends ActiveRecord
         $time_start = microtime(true);
         $runtime['log'][time()] = Yii::t('app/modules/guard', 'Scanning started...');
 
+        if ($cache = Yii::$app->getCache()) {
+            $cache->delete('scan-report');
+            $cache->set('scan-report', [
+                'progress' => 1,
+                'runtime' => $runtime,
+                'status' => '',
+            ], 3600);
+        }
+
+
         // Point of entry
         $path = Yii::getAlias('@app');
         $directories = FileHelper::findDirectories($path, ['recursive' => true]);
@@ -178,6 +188,26 @@ class Scanning extends ActiveRecord
                 $runtime['log'][time()] = Yii::t('app/modules/guard', 'Excluded path `{path}` is not a directory', [
                     'path' => $exclude
                 ]);
+            }
+        }
+
+        $isConsole = $this->_module->isConsole();
+        if (!$isConsole) {
+            sleep(2);
+        }
+
+        // Counting of files
+        //$all_files = [];
+        $all_files_count = 0;
+        foreach ($directories as $key => $directory) {
+            if (!in_array($directory, $ignored)) {
+                $files = FileHelper::findFiles($directory, [
+                    'only' => $onlyTypes,
+                    'except' => $exceptTypes,
+                    'recursive' => false
+                ]);
+                //$all_files = array_merge($all_files, $files);
+                $all_files_count = count($files) + $all_files_count;
             }
         }
 
@@ -208,7 +238,7 @@ class Scanning extends ActiveRecord
                         $scanned[$directory][$file][] = [
                             'lastmod' => $lastmod,
                             'hash' => $hash,
-                            'size' => $size,
+                            'size' => $size
                         ];
 
                         $runtime['log'][time()] = Yii::t('app/modules/guard', 'Scanned `{file}`, md5 hash: {hash}, last modification time of the file: {lastmod}', [
@@ -220,6 +250,15 @@ class Scanning extends ActiveRecord
 
                         $files_count++;
 
+                        $cache->set('scan-report', [
+                            'progress' => (($files_count/$all_files_count)*100),
+                            'runtime' => $runtime,
+                            'status' => 'process',
+                        ], 3600);
+
+                        if (!$isConsole) {
+                            sleep(2);
+                        }
                     }
                 }
                 $dirs_count++;
@@ -246,7 +285,7 @@ class Scanning extends ActiveRecord
 
             // Check for modifications and send a report
             if ($differences = $this->compareReports($scanned)) {
-                if ($count = count($differences)) {
+                if ($count = $this->countDifferences($differences)) {
 
                     $runtime['log'][time()] = Yii::t('app/modules/guard', 'Changes detected! {count} files have been modified since the last scan.', [
                         'count' => $count,
@@ -287,6 +326,13 @@ class Scanning extends ActiveRecord
                     );
                 }
             }
+
+
+            $cache->set('scan-report', [
+                'progress' => 100,
+                'runtime' => $runtime,
+                'status' => 'complete',
+            ], 3600);
 
             return $runtime;
         }
@@ -358,13 +404,35 @@ class Scanning extends ActiveRecord
                 foreach ($paths as $file => $details) {
                     $report[] = [
                         'filename' => (($safe) ? FileHelper::safetyPath($file, $root) : $file),
-                        'modified' => date("F d Y H:i:s", $details[0]['lastmod']),
+                        'filesize' => ((isset($details[0]['size'])) ? $details[0]['size'] : null),
+                        'filehash' => ((isset($details[0]['hash'])) ? $details[0]['hash'] : null),
+                        'mimetype' => FileHelper::getMimeTypeByExtension($file),
+                        'modified' => ((isset($details[0]['lastmod'])) ? date("F d Y H:i:s", $details[0]['lastmod']) : null),
                     ];
                 }
             }
         }
 
         return $report;
+    }
+
+    /**
+     * Counting of elements in differences array
+     *
+     * @param $data
+     * @return int
+     */
+    private function countDifferences($data) {
+        $count = 0;
+        if (is_countable($data)) {
+            foreach ($data as $paths) {
+                foreach ($paths as $file) {
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
     }
 
     /**
@@ -403,23 +471,31 @@ class Scanning extends ActiveRecord
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public static function deleteAll($condition = null, $params = [])
+    {
+        $condition = array_merge((is_array($condition) ? $condition : []), ['NOT', ['id' => 'MAX(`id`)']]);
+        return parent::deleteAll($condition, $params);
+    }
+
+    /**
      * Cleans up data from previous crawls to save database resources
      *
      * @return int
      */
-    private function clearOldReports()
+    public function clearOldReports($allReports = false)
     {
-        /*return self::updateAll(
-            ['data' => null],
-            ['AND', ['<=', 'id', intval($this->id) - 3], ['!=', 'id', $this->id]]
-        );*/
-        /*return self::updateAll(
-            ['data' => null],
-            ['AND', ['>', 'updated_at', new Expression('DATE_SUB(NOW(), INTERVAL 1 WEEK)')], ['!=', 'id', $this->id]]
-        );*/
-        return self::updateAll(
-            ['data' => null],
-            ['AND', ['<', 'updated_at', date("Y-m-d H:i:s", strtotime('-1 week'))], ['!=', 'id', $this->id]]
-        );
+        if ($allReports) {
+            return self::updateAll(
+                ['data' => null],
+                ['AND', ['!=', 'id', $this->id]]
+            );
+        } else {
+            return self::updateAll(
+                ['data' => null],
+                ['AND', ['<', 'updated_at', date("Y-m-d H:i:s", strtotime('-2 days'))], ['!=', 'id', $this->id]]
+            );
+        }
     }
 }
