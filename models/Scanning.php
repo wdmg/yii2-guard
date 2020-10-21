@@ -232,7 +232,7 @@ class Scanning extends ActiveRecord
                     foreach ($files as $file) {
                         $path = FileHelper::normalizePath($file);
                         $lastmod = \filemtime($path);
-                        $hash = \md5_file($path);
+                        $hash = \mb_substr(\md5_file($path), 0, 12);
                         $size = \filesize($path);
 
                         $scanned[$directory][$file][] = [

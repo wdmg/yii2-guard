@@ -1,6 +1,9 @@
 Changelog
 =========
 
+## 1.2.*
+ * Shorten hash for filesystem scan
+ 
 ## 1.2.0 (2020-10-06)
  * Scan Reports process
  * Scan Reports view
