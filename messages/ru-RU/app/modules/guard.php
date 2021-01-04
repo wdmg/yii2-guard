@@ -56,6 +56,7 @@ return [
 
     'Summary' => "Детали",
     'Result' => "Результат",
+    'List of files' => "Список файлов",
 
     'Blocking period' => "Срок блокировки",
     'Default' => "По-умолчанию",

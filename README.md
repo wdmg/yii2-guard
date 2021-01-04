@@ -1,4 +1,4 @@
-[![Yii2](https://img.shields.io/badge/required-Yii2_v2.0.35-blue.svg)](https://packagist.org/packages/yiisoft/yii2)
+[![Yii2](https://img.shields.io/badge/required-Yii2_v2.0.40-blue.svg)](https://packagist.org/packages/yiisoft/yii2)
 [![Downloads](https://img.shields.io/packagist/dt/wdmg/yii2-guard.svg)](https://packagist.org/packages/wdmg/yii2-guard)
 [![Packagist Version](https://img.shields.io/packagist/v/wdmg/yii2-guard.svg)](https://packagist.org/packages/wdmg/yii2-guard)
 ![Progress](https://img.shields.io/badge/progress-ready_to_use-green.svg)
@@ -12,11 +12,11 @@ As well as block the user by IP and network (possible to add blocking client man
 
 This module is an integral part of the [Butterfly.СMS](https://butterflycms.com/) content management system, but can also be used as an standalone extension.
 
-Copyrights (c) 2019-2020 [W.D.M.Group, Ukraine](https://wdmg.com.ua/)
+Copyrights (c) 2019-2021 [W.D.M.Group, Ukraine](https://wdmg.com.ua/)
 
 # Requirements 
 * PHP 5.6 or higher
-* Yii2 v.2.0.35 and newest
+* Yii2 v.2.0.40 and newest
 * [Yii2 Base](https://github.com/wdmg/yii2-base) module (required)
 
 # Installation

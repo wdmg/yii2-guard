@@ -9,7 +9,7 @@ namespace wdmg\guard;
  * @version         1.2.0
  * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
  * @link            https://github.com/wdmg/yii2-guard
- * @copyright       Copyright (c) 2019 - 2020 W.D.M.Group, Ukraine
+ * @copyright       Copyright (c) 2019 - 2021 W.D.M.Group, Ukraine
  * @license         https://opensource.org/licenses/MIT Massachusetts Institute of Technology (MIT) License
  *
  */
@@ -193,6 +193,7 @@ class Module extends BaseModule
             "@tests",
             "@runtime/cache",
             "@webroot/assets",
+            "@webroot/uploads",
             "/node_modules",
             "/.git"
         ]
