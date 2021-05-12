@@ -2,6 +2,7 @@ Changelog
 =========
 
 ## 1.2.*
+ * Show modal call fixed
  * Shorten hash for filesystem scan
  
 ## 1.2.0 (2020-10-06)

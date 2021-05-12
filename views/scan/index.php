@@ -159,6 +159,14 @@ $this->registerJs(<<< JS
                     $(target).find('.modal-footer').remove();
                     $(target).find('.modal-content').append($(data).find('.modal-footer'));
                 }
+                
+                if ($(target).find('button[type="submit"]').length > 0 && $(target).find('form').length > 0) {
+                    $(target).find('button[type="submit"]').on('click', function(event) {
+                        event.preventDefault();
+                        $(target).find('form').submit();
+                    });
+                }
+                
                 $(target).modal();
             }  
         );
