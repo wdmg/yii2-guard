@@ -6,10 +6,10 @@ namespace wdmg\guard;
  * Yii2 Guard
  *
  * @category        Module
- * @version         1.2.0
+ * @version         1.3.0
  * @author          Alexsander Vyshnyvetskyy <alex.vyshnyvetskyy@gmail.com>
  * @link            https://github.com/wdmg/yii2-guard
- * @copyright       Copyright (c) 2019 - 2021 W.D.M.Group, Ukraine
+ * @copyright       Copyright (c) 2019 - 2023 W.D.M.Group, Ukraine
  * @license         https://opensource.org/licenses/MIT Massachusetts Institute of Technology (MIT) License
  *
  */
@@ -50,7 +50,7 @@ class Module extends BaseModule
     /**
      * @var string the module version
      */
-    private $version = "1.2.0";
+    private $version = "1.3.0";
 
     /**
      * @var integer, priority of initialization
@@ -274,28 +274,42 @@ class Module extends BaseModule
     /**
      * {@inheritdoc}
      */
-    public function dashboardNavItems($options = false)
-    {
-        return [
-            'label' => $this->name,
-            'url' => [$this->routePrefix . '/'. $this->id],
-            'icon' => 'fa fa-fw fa-shield-alt',
-            'active' => in_array(\Yii::$app->controller->module->id, [$this->id]),
-            'items' => [
-                [
-                    'label' => Yii::t('app/modules/guard', 'Banned List'),
-                    'url' => [$this->routePrefix . '/guard/banned/'],
-                    'icon' => 'fa fa-fw fa-traffic-light',
-                    'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'banned'),
-                ], [
-                    'label' => Yii::t('app/modules/guard', 'Scan Reports'),
-                    'url' => [$this->routePrefix . '/guard/scan/'],
-                    'icon' => 'fa fa-fw fa-history',
-                    'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'scan'),
-                ]
-            ]
-        ];
-    }
+	public function dashboardNavItems($options = null)
+	{
+		$items = [
+			'label' => $this->name,
+			'url' => [$this->routePrefix . '/'. $this->id],
+			'icon' => 'fa fa-fw fa-shield-alt',
+			'active' => in_array(\Yii::$app->controller->module->id, [$this->id]),
+			'items' => [
+				[
+					'label' => Yii::t('app/modules/guard', 'Banned List'),
+					'url' => [$this->routePrefix . '/guard/banned/'],
+					'icon' => 'fa fa-fw fa-traffic-light',
+					'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'banned'),
+				], [
+					'label' => Yii::t('app/modules/guard', 'Scan Reports'),
+					'url' => [$this->routePrefix . '/guard/scan/'],
+					'icon' => 'fa fa-fw fa-history',
+					'active' => (in_array(\Yii::$app->controller->module->id, ['guard']) &&  Yii::$app->controller->id == 'scan'),
+				]
+			]
+		];
+
+		if (!is_null($options)) {
+
+			if (isset($options['count'])) {
+				$items['label'] .= '<span class="badge badge-default float-right">' . $options['count'] . '</span>';
+				unset($options['count']);
+			}
+
+			if (is_array($options))
+				$items = ArrayHelper::merge($items, $options);
+
+		}
+
+		return $items;
+	}
 
     /**
      * {@inheritdoc}

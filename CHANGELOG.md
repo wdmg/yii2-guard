@@ -1,7 +1,8 @@
 Changelog
 =========
 
-## 1.2.*
+## 1.3.0 (2023-06-24)
+ * Some fixies, update copyrights
  * Show modal call fixed
  * Shorten hash for filesystem scan
  

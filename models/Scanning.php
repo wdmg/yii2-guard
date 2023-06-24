@@ -399,7 +399,7 @@ class Scanning extends ActiveRecord
         if (!$root = Yii::getAlias('@app'))
             $root = dir(__DIR__);
 
-        if (is_countable($data)) {
+        if (is_array($data)) {
             foreach ($data as $paths) {
                 foreach ($paths as $file => $details) {
                     $report[] = [
@@ -424,7 +424,7 @@ class Scanning extends ActiveRecord
      */
     private function countDifferences($data) {
         $count = 0;
-        if (is_countable($data)) {
+        if (is_array($data)) {
             foreach ($data as $paths) {
                 foreach ($paths as $file) {
                     $count++;

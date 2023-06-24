@@ -117,8 +117,6 @@ Use the `Module::dashboardNavItems()` method of the module to generate a navigat
     ?>
 
 # Status and version [ready to use]
+* v.1.3.0 - Some fixies, update copyrights
 * v.1.2.0 - Filesystem scan reports
 * v.1.1.0 - Added blocking by IP functionality
-* v.1.0.2 - Up to date dependencies
-* v.1.0.1 - Fixed deprecated class declaration
-* v.1.0.0 - Added base module and model, behaviors and filters
